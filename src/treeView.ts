@@ -40,6 +40,47 @@ export class MarkerTreeViewProvider
     markerService.onDataUpdated(() => this._provider.refresh());
 
     vscode.commands.registerCommand(
+      'codeExplorer.markerTreeView.actions',
+      async () => {
+        const { stack } = await markerService.getCurrentStack();
+
+        const pickItems: vscode.QuickPickItem[] = [
+          { label: 'Rename' },
+          { label: 'Remove' },
+          { label: 'Switch' },
+          // { label: 'Refresh' },
+        ];
+
+        const selected = await vscode.window.showQuickPick(pickItems, {
+          title: 'Stack Actions of Code Explorer',
+          placeHolder:
+            'Select an action for current stack: ' +
+            (stack ? stack.title : '<none>'),
+        });
+        if (!selected) return;
+
+        switch (selected.label) {
+          case 'Rename':
+            return vscode.commands.executeCommand(
+              'codeExplorer.markerTreeView.renameStack'
+            );
+          case 'Remove':
+            return vscode.commands.executeCommand(
+              'codeExplorer.markerTreeView.removeStack'
+            );
+          case 'Refresh':
+            return vscode.commands.executeCommand(
+              'codeExplorer.markerTreeView.refresh'
+            );
+          case 'Switch':
+            return vscode.commands.executeCommand(
+              'codeExplorer.markerTreeView.loadStack'
+            );
+        }
+      }
+    );
+
+    vscode.commands.registerCommand(
       'codeExplorer.markerTreeView.loadStack',
       async () => {
         const [stacks, { stack: curr }] = await Promise.all([
@@ -56,7 +97,7 @@ export class MarkerTreeViewProvider
         pickItems.unshift({ label: 'Create new stack', id: -1, picked: false });
 
         const selected = await vscode.window.showQuickPick(pickItems, {
-          title: 'Load Stack of Code Explorer',
+          title: 'Switch Stack of Code Explorer',
         });
         if (!selected) return;
 
@@ -75,7 +116,9 @@ export class MarkerTreeViewProvider
         if (!stack) {
           return;
         }
-        const ans = await vscode.window.showInputBox({ prompt: stack.title });
+        const ans = await vscode.window.showInputBox({
+          placeHolder: stack.title,
+        });
         if (!ans) return;
         await markerService.renameStack(stack.id, ans);
       }

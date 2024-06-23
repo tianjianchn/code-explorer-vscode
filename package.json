@@ -32,22 +32,34 @@
         "category": "Code Explorer"
       },
       {
+        "command": "codeExplorer.markerTreeView.actions",
+        "title": "Stack Actions",
+        "category": "Code Explorer",
+        "icon": "$(tools)",
+        "enablement": "view == codeExplorer.markerTreeView"
+      },
+      {
         "command": "codeExplorer.markerTreeView.refresh",
-        "title": "Refresh Stack",
+        "title": "Refresh Stacks",
         "category": "Code Explorer",
         "icon": "$(refresh)"
       },
       {
         "command": "codeExplorer.markerTreeView.loadStack",
-        "title": "Load Stack",
+        "title": "Switch Stack",
         "category": "Code Explorer",
         "icon": "$(arrow-swap)"
       },
       {
         "command": "codeExplorer.markerTreeView.removeStack",
-        "title": "Remove Stack",
+        "title": "Remove Current Stack",
         "category": "Code Explorer",
         "icon": "$(trash)"
+      },
+      {
+        "command": "codeExplorer.markerTreeView.renameStack",
+        "title": "Rename Current Stack",
+        "category": "Code Explorer"
       },
       {
         "command": "codeExplorer.markerTreeView.clickMarker",
@@ -59,12 +71,6 @@
         "title": "Remove Marker",
         "category": "Code Explorer",
         "icon": "$(close)",
-        "enablement": "view == codeExplorer.markerTreeView"
-      },
-      {
-        "command": "codeExplorer.markerTreeView.renameStack",
-        "title": "Rename Stack",
-        "category": "Code Explorer",
         "enablement": "view == codeExplorer.markerTreeView"
       }
     ],
@@ -97,17 +103,17 @@
       ],
       "view/title": [
         {
-          "command": "codeExplorer.markerTreeView.refresh",
-          "when": "view == codeExplorer.markerTreeView",
-          "group": "navigation"
-        },
-        {
           "command": "codeExplorer.markerTreeView.loadStack",
           "when": "view == codeExplorer.markerTreeView",
           "group": "navigation"
         },
         {
-          "command": "codeExplorer.markerTreeView.removeStack",
+          "command": "codeExplorer.markerTreeView.actions",
+          "when": "view == codeExplorer.markerTreeView",
+          "group": "navigation"
+        },
+        {
+          "command": "codeExplorer.markerTreeView.refresh",
           "when": "view == codeExplorer.markerTreeView",
           "group": "navigation"
         }
@@ -122,11 +128,6 @@
           "command": "codeExplorer.markerTreeView.removeMarker",
           "when": "view == codeExplorer.markerTreeView && viewItem == marker",
           "group": "0"
-        },
-        {
-          "command": "codeExplorer.markerTreeView.renameStack",
-          "when": "view == codeExplorer.markerTreeView && viewItem == marker",
-          "group": "1"
         }
       ]
     }
