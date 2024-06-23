@@ -1,6 +1,8 @@
 Code Explorer
 
-Explore codebase efficiently with adding markers into a stack and switching them by clicking!
+Explore codebase efficiently with adding markers into a stack and switching them by clicking! Download from [VSCode Market](https://marketplace.visualstudio.com/items?itemName=tianjianchn.code-explorer).
+
+![](https://vsmarketplacebadges.dev/version/tianjianchn.code-explorer.svg) ![](https://vsmarketplacebadges.dev/installs/tianjianchn.code-explorer.svg)
 
 ![](./media/example.jpeg)
 
