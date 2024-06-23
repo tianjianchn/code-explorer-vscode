@@ -1,8 +1,8 @@
 {
   "name": "code-explorer",
   "displayName": "Code Explorer",
-  "description": "Explore code efficiently",
-  "version": "0.1.0",
+  "description": "Explore code efficiently with a stack",
+  "version": "0.1.1",
   "license": "MIT",
   "repository": {
     "url": "https://github.com/tianjianchn/code-explorer-vscode"
