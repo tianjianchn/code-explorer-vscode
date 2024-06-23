@@ -2,22 +2,123 @@
   "name": "code-explorer",
   "displayName": "Code Explorer",
   "description": "Explore code efficiently",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "engines": {
     "vscode": "^1.80.0"
   },
+  "publisher": "tianjianchn",
   "categories": [
     "Other"
   ],
   "activationEvents": [],
   "main": "./out/extension.js",
+  "icon": "media/logo.png",
   "contributes": {
     "commands": [
       {
-        "command": "code-explorer.helloWorld",
-        "title": "Hello World"
+        "command": "codeExplorer.addMarker",
+        "title": "Add Code Marker",
+        "category": "Code Explorer"
+      },
+      {
+        "command": "codeExplorer.markerTreeView.refresh",
+        "title": "Refresh Stack",
+        "category": "Code Explorer",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "codeExplorer.markerTreeView.loadStack",
+        "title": "Load Stack",
+        "category": "Code Explorer",
+        "icon": "$(arrow-swap)"
+      },
+      {
+        "command": "codeExplorer.markerTreeView.removeStack",
+        "title": "Remove Stack",
+        "category": "Code Explorer",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "codeExplorer.markerTreeView.clickMarker",
+        "title": "Click Marker",
+        "category": "Code Explorer"
+      },
+      {
+        "command": "codeExplorer.markerTreeView.removeMarker",
+        "title": "Remove Marker",
+        "category": "Code Explorer",
+        "icon": "$(close)",
+        "enablement": "view == codeExplorer.markerTreeView"
+      },
+      {
+        "command": "codeExplorer.markerTreeView.renameStack",
+        "title": "Rename Stack",
+        "category": "Code Explorer",
+        "enablement": "view == codeExplorer.markerTreeView"
       }
-    ]
+    ],
+    "viewsContainers": {
+      "panel": [
+        {
+          "id": "codeExplorerPanel",
+          "title": "Code Explorer",
+          "icon": "media/logo.svg"
+        }
+      ]
+    },
+    "views": {
+      "debug": [],
+      "codeExplorerPanel": [
+        {
+          "id": "codeExplorer.markerTreeView",
+          "name": "Markers",
+          "contextualTitle": "Code Explorer",
+          "visibility": "visible"
+        }
+      ]
+    },
+    "menus": {
+      "editor/context": [
+        {
+          "command": "codeExplorer.addMarker",
+          "group": "z_commands"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "codeExplorer.markerTreeView.refresh",
+          "when": "view == codeExplorer.markerTreeView",
+          "group": "navigation"
+        },
+        {
+          "command": "codeExplorer.markerTreeView.loadStack",
+          "when": "view == codeExplorer.markerTreeView",
+          "group": "navigation"
+        },
+        {
+          "command": "codeExplorer.markerTreeView.removeStack",
+          "when": "view == codeExplorer.markerTreeView",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "codeExplorer.markerTreeView.removeMarker",
+          "when": "view == codeExplorer.markerTreeView && viewItem == marker",
+          "group": "inline"
+        },
+        {
+          "command": "codeExplorer.markerTreeView.removeMarker",
+          "when": "view == codeExplorer.markerTreeView && viewItem == marker",
+          "group": "0"
+        },
+        {
+          "command": "codeExplorer.markerTreeView.renameStack",
+          "when": "view == codeExplorer.markerTreeView && viewItem == marker",
+          "group": "1"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
