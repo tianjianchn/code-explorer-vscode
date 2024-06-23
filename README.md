@@ -2,7 +2,7 @@ Code Explorer
 
 Explore codebase efficiently with adding markers into a stack and switching them by clicking!
 
-![](./media/example.png)
+![](./media/example.jpeg)
 
 ## Usage
 
