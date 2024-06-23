@@ -89,15 +89,15 @@ export class MarkerTreeViewProvider
         ]);
         const pickItems: (vscode.QuickPickItem & { id: number })[] = stacks.map(
           (s) => ({
-            label: s.title,
+            label: (s.id === curr?.id ? '* ' : '') + s.title,
             id: s.id,
-            picked: s.id === curr?.id,
           })
         );
         pickItems.unshift({ label: 'Create new stack', id: -1, picked: false });
 
         const selected = await vscode.window.showQuickPick(pickItems, {
           title: 'Switch Stack of Code Explorer',
+          placeHolder: 'Current stack: ' + (curr?.title ?? '<none>'),
         });
         if (!selected) return;
 
