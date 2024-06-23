@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { MarkerTreeViewProvider } from './treeView';
+import { MarkerTreeViewProvider } from './stackView';
 import { extensionEnv } from './extensionEnv';
 import { registerCommands } from './commands';
 import { output } from './output';

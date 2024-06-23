@@ -20,7 +20,7 @@ export class MarkerTreeViewProvider
     const context = extensionEnv.getExtensionContext();
 
     this._provider = new MarkerTreeViewProvider();
-    const view = vscode.window.createTreeView('codeExplorer.markerTreeView', {
+    const view = vscode.window.createTreeView('codeExplorer.stackView', {
       treeDataProvider: this._provider,
       showCollapseAll: true,
     });
@@ -31,16 +31,13 @@ export class MarkerTreeViewProvider
   }
 
   private static registerCommands() {
-    vscode.commands.registerCommand(
-      'codeExplorer.markerTreeView.refresh',
-      () => {
-        this._provider.refresh();
-      }
-    );
+    vscode.commands.registerCommand('codeExplorer.stackView.refresh', () => {
+      this._provider.refresh();
+    });
     markerService.onDataUpdated(() => this._provider.refresh());
 
     vscode.commands.registerCommand(
-      'codeExplorer.markerTreeView.actions',
+      'codeExplorer.stackView.actions',
       async () => {
         const { stack } = await markerService.getCurrentStack();
 
@@ -62,26 +59,26 @@ export class MarkerTreeViewProvider
         switch (selected.label) {
           case 'Rename':
             return vscode.commands.executeCommand(
-              'codeExplorer.markerTreeView.renameStack'
+              'codeExplorer.stackView.renameStack'
             );
           case 'Remove':
             return vscode.commands.executeCommand(
-              'codeExplorer.markerTreeView.removeStack'
+              'codeExplorer.stackView.removeStack'
             );
           case 'Refresh':
             return vscode.commands.executeCommand(
-              'codeExplorer.markerTreeView.refresh'
+              'codeExplorer.stackView.refresh'
             );
           case 'Switch':
             return vscode.commands.executeCommand(
-              'codeExplorer.markerTreeView.loadStack'
+              'codeExplorer.stackView.loadStack'
             );
         }
       }
     );
 
     vscode.commands.registerCommand(
-      'codeExplorer.markerTreeView.loadStack',
+      'codeExplorer.stackView.loadStack',
       async () => {
         const [stacks, { stack: curr }] = await Promise.all([
           markerService.getStacks(),
@@ -110,7 +107,7 @@ export class MarkerTreeViewProvider
     );
 
     vscode.commands.registerCommand(
-      'codeExplorer.markerTreeView.renameStack',
+      'codeExplorer.stackView.renameStack',
       async () => {
         const { stack } = await markerService.getCurrentStack();
         if (!stack) {
@@ -125,7 +122,7 @@ export class MarkerTreeViewProvider
     );
 
     vscode.commands.registerCommand(
-      'codeExplorer.markerTreeView.removeStack',
+      'codeExplorer.stackView.removeStack',
       async () => {
         const { stack, markers } = await markerService.getCurrentStack();
         if (!stack) {
@@ -143,7 +140,7 @@ export class MarkerTreeViewProvider
     );
 
     vscode.commands.registerCommand(
-      'codeExplorer.markerTreeView.clickMarker',
+      'codeExplorer.stackView.clickMarker',
       async (el?: TreeElement) => {
         if (!el || el.type !== 'marker') return;
 
@@ -158,7 +155,7 @@ export class MarkerTreeViewProvider
     );
 
     vscode.commands.registerCommand(
-      'codeExplorer.markerTreeView.removeMarker',
+      'codeExplorer.stackView.removeMarker',
       async (el?: TreeElement) => {
         if (!el || el.type !== 'marker') return;
 
@@ -166,6 +163,10 @@ export class MarkerTreeViewProvider
       }
     );
   }
+
+  // =========================================================
+  // Instance properties and methods below
+  // =========================================================
 
   private _onDidChangeTreeData: vscode.EventEmitter<TreeElement | void> =
     new vscode.EventEmitter<TreeElement | void>();
@@ -213,7 +214,7 @@ export class MarkerTreeViewProvider
     return {
       label,
       command: {
-        command: 'codeExplorer.markerTreeView.clickMarker',
+        command: 'codeExplorer.stackView.clickMarker',
         arguments: [element],
         // command: 'vscode.open',
         // arguments: [

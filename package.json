@@ -32,46 +32,46 @@
         "category": "Code Explorer"
       },
       {
-        "command": "codeExplorer.markerTreeView.actions",
+        "command": "codeExplorer.stackView.actions",
         "title": "Stack Actions",
         "category": "Code Explorer",
         "icon": "$(tools)",
-        "enablement": "view == codeExplorer.markerTreeView"
+        "enablement": "view == codeExplorer.stackView"
       },
       {
-        "command": "codeExplorer.markerTreeView.refresh",
+        "command": "codeExplorer.stackView.refresh",
         "title": "Refresh Stacks",
         "category": "Code Explorer",
         "icon": "$(refresh)"
       },
       {
-        "command": "codeExplorer.markerTreeView.loadStack",
+        "command": "codeExplorer.stackView.loadStack",
         "title": "Switch Stack",
         "category": "Code Explorer",
         "icon": "$(arrow-swap)"
       },
       {
-        "command": "codeExplorer.markerTreeView.removeStack",
+        "command": "codeExplorer.stackView.removeStack",
         "title": "Remove Current Stack",
         "category": "Code Explorer",
         "icon": "$(trash)"
       },
       {
-        "command": "codeExplorer.markerTreeView.renameStack",
+        "command": "codeExplorer.stackView.renameStack",
         "title": "Rename Current Stack",
         "category": "Code Explorer"
       },
       {
-        "command": "codeExplorer.markerTreeView.clickMarker",
+        "command": "codeExplorer.stackView.clickMarker",
         "title": "Click Marker",
         "category": "Code Explorer"
       },
       {
-        "command": "codeExplorer.markerTreeView.removeMarker",
+        "command": "codeExplorer.stackView.removeMarker",
         "title": "Remove Marker",
         "category": "Code Explorer",
         "icon": "$(close)",
-        "enablement": "view == codeExplorer.markerTreeView"
+        "enablement": "view == codeExplorer.stackView"
       }
     ],
     "viewsContainers": {
@@ -87,7 +87,7 @@
       "debug": [],
       "codeExplorerPanel": [
         {
-          "id": "codeExplorer.markerTreeView",
+          "id": "codeExplorer.stackView",
           "name": "Markers",
           "contextualTitle": "Code Explorer",
           "visibility": "visible"
@@ -103,30 +103,30 @@
       ],
       "view/title": [
         {
-          "command": "codeExplorer.markerTreeView.loadStack",
-          "when": "view == codeExplorer.markerTreeView",
+          "command": "codeExplorer.stackView.loadStack",
+          "when": "view == codeExplorer.stackView",
           "group": "navigation"
         },
         {
-          "command": "codeExplorer.markerTreeView.actions",
-          "when": "view == codeExplorer.markerTreeView",
+          "command": "codeExplorer.stackView.actions",
+          "when": "view == codeExplorer.stackView",
           "group": "navigation"
         },
         {
-          "command": "codeExplorer.markerTreeView.refresh",
-          "when": "view == codeExplorer.markerTreeView",
+          "command": "codeExplorer.stackView.refresh",
+          "when": "view == codeExplorer.stackView",
           "group": "navigation"
         }
       ],
       "view/item/context": [
         {
-          "command": "codeExplorer.markerTreeView.removeMarker",
-          "when": "view == codeExplorer.markerTreeView && viewItem == marker",
+          "command": "codeExplorer.stackView.removeMarker",
+          "when": "view == codeExplorer.stackView && viewItem == marker",
           "group": "inline"
         },
         {
-          "command": "codeExplorer.markerTreeView.removeMarker",
-          "when": "view == codeExplorer.markerTreeView && viewItem == marker",
+          "command": "codeExplorer.stackView.removeMarker",
+          "when": "view == codeExplorer.stackView && viewItem == marker",
           "group": "0"
         }
       ]
