@@ -34,6 +34,16 @@
         "category": "Code Explorer"
       },
       {
+        "command": "codeExplorer.stackView.selectMarker",
+        "title": "Select a Marker of Current Stack",
+        "category": "Code Explorer"
+      },
+      {
+        "command": "codeExplorer.stackView.selectMarkerAll",
+        "title": "Select a Marker of All Stacks",
+        "category": "Code Explorer"
+      },
+      {
         "command": "codeExplorer.stackView.actions",
         "title": "Stack Actions",
         "category": "Code Explorer",
@@ -64,8 +74,8 @@
         "category": "Code Explorer"
       },
       {
-        "command": "codeExplorer.stackView.clickMarker",
-        "title": "Click Marker",
+        "command": "codeExplorer.stackView.openMarker",
+        "title": "Open the Marker",
         "category": "Code Explorer"
       },
       {
@@ -111,11 +121,6 @@
         },
         {
           "command": "codeExplorer.stackView.actions",
-          "when": "view == codeExplorer.stackView",
-          "group": "navigation"
-        },
-        {
-          "command": "codeExplorer.stackView.refresh",
           "when": "view == codeExplorer.stackView",
           "group": "navigation"
         }

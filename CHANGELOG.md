@@ -6,6 +6,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+- Add `Select a Marker of Current Stack` and `Select a Marker of All Stacks` commands
+
 ## 0.1.7
 
 - Support drag and drop in stack view

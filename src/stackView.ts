@@ -34,51 +34,70 @@ export class MarkerTreeViewProvider
   }
 
   private static registerCommands() {
-    vscode.commands.registerCommand('codeExplorer.stackView.refresh', () => {
-      this._provider.refresh();
-    });
-    markerService.onDataUpdated(() => this._provider.refresh());
-
     vscode.commands.registerCommand(
       'codeExplorer.stackView.actions',
       async () => {
         const { stack } = await markerService.getCurrentStack();
 
-        const pickItems: vscode.QuickPickItem[] = [
-          { label: 'Rename' },
-          { label: 'Remove' },
-          { label: 'Switch' },
-          // { label: 'Refresh' },
+        const pickItems: (vscode.QuickPickItem & {
+          id:
+            | 'rename'
+            | 'remove'
+            | 'switch'
+            | 'refresh'
+            | 'selectMarker'
+            | 'selectMarkerAll';
+        })[] = [
+          { label: 'Goto a marker of current stack', id: 'selectMarker' },
+          { label: 'Goto a marker of all stacks', id: 'selectMarkerAll' },
+          { label: 'Rename current stack', id: 'rename' },
+          { label: 'Remove current stack', id: 'remove' },
+          { label: 'Switch stack', id: 'switch' },
+          { label: 'Refresh stacks', id: 'refresh' },
         ];
 
         const selected = await vscode.window.showQuickPick(pickItems, {
           title: 'Stack Actions of Code Explorer',
-          placeHolder:
-            'Select an action for current stack: ' +
-            (stack ? stack.title : '<none>'),
+          placeHolder: 'Current stack: ' + (stack ? stack.title : '<none>'),
         });
         if (!selected) return;
 
-        switch (selected.label) {
-          case 'Rename':
+        switch (selected.id) {
+          case 'selectMarker':
+            return vscode.commands.executeCommand(
+              'codeExplorer.stackView.selectMarker'
+            );
+          case 'selectMarkerAll':
+            return vscode.commands.executeCommand(
+              'codeExplorer.stackView.selectMarkerAll'
+            );
+          case 'rename':
             return vscode.commands.executeCommand(
               'codeExplorer.stackView.renameStack'
             );
-          case 'Remove':
+          case 'remove':
             return vscode.commands.executeCommand(
               'codeExplorer.stackView.removeStack'
             );
-          case 'Refresh':
+          case 'refresh':
             return vscode.commands.executeCommand(
               'codeExplorer.stackView.refresh'
             );
-          case 'Switch':
+          case 'switch':
             return vscode.commands.executeCommand(
               'codeExplorer.stackView.loadStack'
             );
+          default:
+            const exhausted: never = selected.id;
+            throw new Error('Unhandled action: ' + exhausted);
         }
       }
     );
+
+    vscode.commands.registerCommand('codeExplorer.stackView.refresh', () => {
+      this._provider.refresh();
+    });
+    markerService.onDataUpdated(() => this._provider.refresh());
 
     vscode.commands.registerCommand(
       'codeExplorer.stackView.loadStack',
@@ -143,17 +162,80 @@ export class MarkerTreeViewProvider
     );
 
     vscode.commands.registerCommand(
-      'codeExplorer.stackView.clickMarker',
-      async (el?: TreeElement) => {
-        if (!el || el.type !== 'marker') return;
+      'codeExplorer.stackView.selectMarker',
+      async () => {
+        const { stack, markers } = await markerService.getCurrentStack();
 
-        const doc = await vscode.workspace.openTextDocument(el.file);
-        vscode.window.showTextDocument(doc, {
-          selection: new vscode.Selection(
-            new vscode.Position(el.line, el.column),
-            new vscode.Position(el.line, el.column)
-          ),
-        });
+        await showMarkers(
+          'Select a marker of current stack: ' + stack?.title,
+          markers
+        );
+      }
+    );
+
+    vscode.commands.registerCommand(
+      'codeExplorer.stackView.selectMarkerAll',
+      async () => {
+        const markers = await markerService.getAllMarkers();
+        await showMarkers('Select a marker in ALL stacks', markers);
+      }
+    );
+
+    async function showMarkers(title: string, markers: Marker[]) {
+      if (!markers.length) {
+        await vscode.window.showQuickPick([{ label: 'No markers' }]);
+        return;
+      }
+
+      const pickItems: (vscode.QuickPickItem & { marker: Marker })[] =
+        markers.map((m) => ({
+          label: getMarkerTitle(m),
+          description: getMarkerDesc(m),
+          marker: m,
+        }));
+
+      const selected = await vscode.window.showQuickPick(pickItems, {
+        title,
+      });
+      if (!selected) return;
+
+      const selectedMarker = selected.marker;
+      await vscode.commands.executeCommand(
+        'codeExplorer.stackView.openMarker',
+        selectedMarker
+      );
+    }
+
+    vscode.commands.registerCommand(
+      'codeExplorer.stackView.openMarker',
+      async (el?: TreeElement) => {
+        if (!el) {
+          return await vscode.commands.executeCommand(
+            'codeExplorer.stackView.selectMarker'
+          );
+        }
+
+        if (el.type !== 'marker') return;
+
+        const selection = new vscode.Selection(
+          new vscode.Position(el.line, el.column),
+          new vscode.Position(el.line, el.column)
+        );
+
+        // const doc = await vscode.workspace.openTextDocument(el.file);
+        // vscode.window.showTextDocument(doc, {
+        //   selection,
+        // });
+
+        await vscode.commands.executeCommand(
+          // see https://code.visualstudio.com/api/references/commands
+          'vscode.openWith',
+          vscode.Uri.file(el.file),
+          'default',
+          {
+            selection,
+          } as vscode.TextDocumentShowOptions
+        );
       }
     );
 
@@ -214,24 +296,16 @@ export class MarkerTreeViewProvider
       };
     }
 
-    const label = `${element.title ?? element.text}`;
+    const label = getMarkerTitle(element);
 
     return {
       label,
       command: {
-        command: 'codeExplorer.stackView.clickMarker',
+        command: 'codeExplorer.stackView.openMarker',
         arguments: [element],
-        // command: 'vscode.open',
-        // arguments: [
-        //   vscode.Uri.file(element.file).with({
-        //     fragment: 'L' + element.line + ',' + element.column,
-        //   }),
-        // ],
         title: 'Click to go',
       },
-      description: `${getRelativeFilePath(element.file)}:${element.line + 1}:${
-        element.column + 1
-      }`,
+      description: getMarkerDesc(element),
       tooltip: 'Created at ' + getDateTimeStr(element.createdAt),
       collapsibleState: vscode.TreeItemCollapsibleState.None,
       contextValue: 'marker',
@@ -263,4 +337,14 @@ export class MarkerTreeViewProvider
     const treeItems: Marker[] = transferItem.value;
     markerService.moveMarker(treeItems[0].id, target?.id);
   }
+}
+
+function getMarkerTitle(marker: Marker) {
+  return marker.title ?? marker.text;
+}
+
+function getMarkerDesc(marker: Marker) {
+  return `${getRelativeFilePath(marker.file)}:${marker.line + 1}:${
+    marker.column + 1
+  }`;
 }

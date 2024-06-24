@@ -66,6 +66,11 @@ class MarkerService {
     return this.stacks;
   }
 
+  async getAllMarkers() {
+    await this.loaded.promise;
+    return this.markers;
+  }
+
   async addMarker(
     marker: Omit<Marker, 'type' | 'createdAt' | 'id' | 'stackId'>
   ) {
