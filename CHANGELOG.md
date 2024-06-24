@@ -6,6 +6,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## 0.1.7
+
 - Support drag and drop in stack view
 - Add .actions command to gather actions like rename/remove
 - Prompt current stack in switch input box
