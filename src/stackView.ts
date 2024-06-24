@@ -11,7 +11,9 @@ interface LabelElement {
 type TreeElement = Marker | LabelElement;
 
 export class MarkerTreeViewProvider
-  implements vscode.TreeDataProvider<TreeElement>
+  implements
+    vscode.TreeDataProvider<TreeElement>,
+    vscode.TreeDragAndDropController<Marker>
 {
   private static _view: vscode.TreeView<TreeElement>;
   private static _provider: MarkerTreeViewProvider;
@@ -22,6 +24,7 @@ export class MarkerTreeViewProvider
     this._provider = new MarkerTreeViewProvider();
     const view = vscode.window.createTreeView('codeExplorer.stackView', {
       treeDataProvider: this._provider,
+      dragAndDropController: this._provider,
       showCollapseAll: true,
     });
     context.subscriptions.push(view);
@@ -167,6 +170,8 @@ export class MarkerTreeViewProvider
   // =========================================================
   // Instance properties and methods below
   // =========================================================
+  dropMimeTypes = ['application/vnd.code.tree.codeExplorerStackView'];
+  dragMimeTypes = ['application/vnd.code.tree.codeExplorerStackView'];
 
   private _onDidChangeTreeData: vscode.EventEmitter<TreeElement | void> =
     new vscode.EventEmitter<TreeElement | void>();
@@ -219,7 +224,7 @@ export class MarkerTreeViewProvider
         // command: 'vscode.open',
         // arguments: [
         //   vscode.Uri.file(element.file).with({
-        //     fragment: ':' + element.line + ':' + element.column,
+        //     fragment: 'L' + element.line + ',' + element.column,
         //   }),
         // ],
         title: 'Click to go',
@@ -231,5 +236,31 @@ export class MarkerTreeViewProvider
       collapsibleState: vscode.TreeItemCollapsibleState.None,
       contextValue: 'marker',
     };
+  }
+
+  handleDrag?(
+    source: readonly Marker[],
+    dataTransfer: vscode.DataTransfer,
+    token: vscode.CancellationToken
+  ): void | Thenable<void> {
+    dataTransfer.set(
+      'application/vnd.code.tree.codeExplorerStackView',
+      new vscode.DataTransferItem(source)
+    );
+  }
+  handleDrop?(
+    target: Marker | undefined,
+    dataTransfer: vscode.DataTransfer,
+    token: vscode.CancellationToken
+  ): void | Thenable<void> {
+    const transferItem = dataTransfer.get(
+      'application/vnd.code.tree.codeExplorerStackView'
+    );
+    if (!transferItem) {
+      return;
+    }
+
+    const treeItems: Marker[] = transferItem.value;
+    markerService.moveMarker(treeItems[0].id, target?.id);
   }
 }

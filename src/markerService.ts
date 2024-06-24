@@ -105,6 +105,29 @@ class MarkerService {
     await this.saveData();
   }
 
+  /**
+   * Put src marker after target marker
+   * @param srcId
+   * @param targetId
+   * @returns
+   */
+  async moveMarker(srcId: number, targetId: number = 0) {
+    if (srcId === targetId) return;
+
+    const srcIndex = this.markers.findIndex((m) => m.id === srcId);
+    if (srcIndex < 0) return;
+    const src = this.markers[srcIndex];
+
+    let tgtIndex = this.markers.findIndex((m) => m.id === targetId);
+    if (tgtIndex < 0) return;
+    this.markers.splice(srcIndex, 1);
+    if (srcIndex < tgtIndex) {
+      tgtIndex -= 1;
+    }
+    this.markers.splice(tgtIndex + 1, 0, src);
+    await this.saveData();
+  }
+
   async removeMarker(markerId: number) {
     const index = this.markers.findIndex((m) => m.id === markerId);
     if (index < 0) return;

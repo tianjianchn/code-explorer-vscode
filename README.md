@@ -1,5 +1,7 @@
 Code Explorer
 
+> Mark code like bookmark!
+
 Explore codebase efficiently with adding markers into a stack and switching them by clicking! Download from [VSCode Market](https://marketplace.visualstudio.com/items?itemName=tianjianchn.code-explorer).
 
 ![](https://vsmarketplacebadges.dev/version/tianjianchn.code-explorer.png) ![](https://vsmarketplacebadges.dev/installs/tianjianchn.code-explorer.png)

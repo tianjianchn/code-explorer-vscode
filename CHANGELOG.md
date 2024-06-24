@@ -4,6 +4,12 @@ All notable changes to the "code-explorer" extension will be documented in this 
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [Unreleased]
+
+- Support drag and drop in stack view
+- Add .actions command to gather actions like rename/remove
+- Prompt current stack in switch input box
+
 ## 0.1.0
 
 - Initial release
