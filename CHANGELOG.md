@@ -6,6 +6,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+- Allow filter on description when running select marker commands
+
 ## 0.1.8
 
 - Use UUID as marker and stack id

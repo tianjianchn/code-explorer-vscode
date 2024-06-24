@@ -2,7 +2,7 @@ Code Explorer
 
 > Mark code like bookmark!
 
-Explore codebase efficiently with adding markers into a stack and switching them by clicking!
+Explore codebase efficiently with adding markers into a stack and switching among them.
 
 ![](https://vsmarketplacebadges.dev/version/tianjianchn.code-explorer.png) ![](https://vsmarketplacebadges.dev/installs/tianjianchn.code-explorer.png)
 

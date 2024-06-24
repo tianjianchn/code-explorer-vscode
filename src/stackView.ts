@@ -120,6 +120,8 @@ export class MarkerTreeViewProvider
         const selected = await vscode.window.showQuickPick(pickItems, {
           title: 'Switch Stack of Code Explorer',
           placeHolder: 'Current stack: ' + (curr?.title ?? '<none>'),
+          matchOnDescription: true,
+          matchOnDetail: true,
         });
         if (!selected) return;
 
@@ -199,6 +201,8 @@ export class MarkerTreeViewProvider
 
       const selected = await vscode.window.showQuickPick(pickItems, {
         title,
+        matchOnDescription: true,
+        matchOnDetail: true,
       });
       if (!selected) return;
 
