@@ -1,25 +1,24 @@
 import * as vscode from 'vscode';
 import { extensionEnv } from './extensionEnv';
-import { Future, getDateStr, padStart } from './util';
+import { Future, getDateStr, padStart, uuid } from './util';
 import { output } from './output';
 
 export interface Marker {
   type: 'marker';
-  id: number;
+  id: string;
   title?: string;
   file: string;
   line: number;
   column: number;
   text: string;
   createdAt: number;
-  stackId: number;
+  stackId: string;
 }
 
 export interface Stack {
   type: 'stack';
-  id: number;
+  id: string;
   title: string;
-  firstMarkerId?: number;
   createdAt: number;
 }
 
@@ -30,13 +29,13 @@ export interface MarkerGroupWithChildren extends Stack {
 interface FileContent {
   markers: Marker[];
   stacks: Stack[];
-  currentStackId: number;
+  currentStackId: string | null;
 }
 
 class MarkerService {
   private markers: Marker[] = [];
   private stacks: Stack[] = [];
-  private currentStackId = -1;
+  private currentStackId: string | null = null;
   private loaded = new Future();
 
   private nextId = 1;
@@ -76,8 +75,8 @@ class MarkerService {
   ) {
     const now = new Date();
     const defaultStackTitle = marker.text.slice(0, 16) + ' ' + getDateStr(now);
-    if (this.currentStackId <= 0) {
-      const stackId = this.nextId++;
+    if (!this.currentStackId) {
+      const stackId = uuid();
       this.stacks.unshift({
         type: 'stack',
         id: stackId,
@@ -97,7 +96,7 @@ class MarkerService {
       }
     }
 
-    const markerId = this.nextId++;
+    const markerId = uuid();
 
     this.markers.unshift({
       ...marker,
@@ -116,7 +115,7 @@ class MarkerService {
    * @param targetId
    * @returns
    */
-  async moveMarker(srcId: number, targetId: number = 0) {
+  async moveMarker(srcId: string, targetId: string) {
     if (srcId === targetId) return;
 
     const srcIndex = this.markers.findIndex((m) => m.id === srcId);
@@ -133,7 +132,7 @@ class MarkerService {
     await this.saveData();
   }
 
-  async removeMarker(markerId: number) {
+  async removeMarker(markerId: string) {
     const index = this.markers.findIndex((m) => m.id === markerId);
     if (index < 0) return;
     const marker = this.markers[index];
@@ -142,36 +141,37 @@ class MarkerService {
     // Clear empty stacks
     const usedStackIds: Record<string, true> = {};
     this.markers.forEach((m) => {
-      usedStackIds[m.stackId + ''] = true;
+      usedStackIds[m.stackId] = true;
     });
     this.stacks = this.stacks.filter((s) => usedStackIds[s.id]);
-    if (!usedStackIds[this.currentStackId]) this.currentStackId = -1;
+    if (this.currentStackId && !usedStackIds[this.currentStackId])
+      this.currentStackId = null;
 
     await this.saveData();
   }
 
   async createStack() {
-    const stackId = this.nextId++;
+    const stackId = uuid();
     this.currentStackId = stackId;
 
     await this.saveData();
   }
 
-  async renameStack(id: number, title: string) {
+  async renameStack(id: string, title: string) {
     const stack = this.stacks.find((s) => s.id === id);
     if (!stack) return;
     stack.title = title;
     await this.saveData();
   }
 
-  async removeStack(id: number) {
+  async removeStack(id: string) {
     this.markers = this.markers.filter((m) => m.stackId !== id);
     this.stacks = this.stacks.filter((s) => s.id !== id);
     this.currentStackId = this.stacks[0]?.id ?? -1;
     await this.saveData();
   }
 
-  async switchStack(stackId: number) {
+  async switchStack(stackId: string) {
     this.currentStackId = stackId;
     await this.saveData();
   }
@@ -191,19 +191,22 @@ class MarkerService {
       output.log('Loading data from ' + file.toString());
       const fileData = await vscode.workspace.fs.readFile(file);
       const dec = new TextDecoder('utf-8');
-      const strData = dec.decode(fileData);
-      const data = JSON.parse(strData) as FileContent;
+      const content = dec.decode(fileData);
+      const data = JSON.parse(content) as FileContent;
+
+      // Normalize data from old versions
+      data.markers.forEach((m) => {
+        m.id = m.id + '';
+        m.stackId = m.stackId + '';
+      });
+      data.stacks.forEach((s) => {
+        s.id = s.id + '';
+      });
+      data.currentStackId = data.currentStackId + '';
+
       this.markers = data.markers;
       this.stacks = data.stacks;
       this.currentStackId = data.currentStackId;
-
-      // Adjust next id
-      this.stacks.forEach((s) => {
-        if (s.id >= this.nextId) this.nextId = s.id + 1;
-      });
-      this.markers.forEach((m) => {
-        if (m.id >= this.nextId) this.nextId = m.id + 1;
-      });
     } catch (e) {
       output.log('Error to read code explorer data:' + String(e));
     }
@@ -217,16 +220,15 @@ class MarkerService {
 
     const file = vscode.Uri.joinPath(context.storageUri, 'code-explorer.json');
     const data: FileContent = {
-      markers: this.markers,
-      stacks: this.stacks,
       currentStackId: this.currentStackId,
+      stacks: this.stacks,
+      markers: this.markers,
     };
     const enc = new TextEncoder();
+    const content = enc.encode(JSON.stringify(data, null, 2));
+
     // output.log('Saving data to ' + file.toString());
-    await vscode.workspace.fs.writeFile(
-      file,
-      enc.encode(JSON.stringify(data, null, 2))
-    );
+    await vscode.workspace.fs.writeFile(file, content);
 
     this._onDataUpdatedEmitter.fire();
   }

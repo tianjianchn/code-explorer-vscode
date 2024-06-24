@@ -6,6 +6,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+- Use UUID as marker and stack id
 - Add `Select a Marker of Current Stack` and `Select a Marker of All Stacks` commands
 
 ## 0.1.7

@@ -106,13 +106,16 @@ export class MarkerTreeViewProvider
           markerService.getStacks(),
           markerService.getCurrentStack(),
         ]);
-        const pickItems: (vscode.QuickPickItem & { id: number })[] = stacks.map(
-          (s) => ({
+        const pickItems: (vscode.QuickPickItem & { id: string | null })[] =
+          stacks.map((s) => ({
             label: (s.id === curr?.id ? '* ' : '') + s.title,
             id: s.id,
-          })
-        );
-        pickItems.unshift({ label: 'Create new stack', id: -1, picked: false });
+          }));
+        pickItems.unshift({
+          label: 'Create new stack',
+          id: null,
+          picked: false,
+        });
 
         const selected = await vscode.window.showQuickPick(pickItems, {
           title: 'Switch Stack of Code Explorer',
@@ -120,7 +123,7 @@ export class MarkerTreeViewProvider
         });
         if (!selected) return;
 
-        if (selected.id < 0) {
+        if (!selected.id) {
           await markerService.createStack();
         } else {
           await markerService.switchStack(selected.id);
@@ -322,11 +325,14 @@ export class MarkerTreeViewProvider
       new vscode.DataTransferItem(source)
     );
   }
+
   handleDrop?(
     target: Marker | undefined,
     dataTransfer: vscode.DataTransfer,
     token: vscode.CancellationToken
   ): void | Thenable<void> {
+    if (!target) return;
+
     const transferItem = dataTransfer.get(
       'application/vnd.code.tree.codeExplorerStackView'
     );
@@ -335,7 +341,7 @@ export class MarkerTreeViewProvider
     }
 
     const treeItems: Marker[] = transferItem.value;
-    markerService.moveMarker(treeItems[0].id, target?.id);
+    markerService.moveMarker(treeItems[0].id, target.id);
   }
 }
 

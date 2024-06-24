@@ -1,5 +1,10 @@
 import * as vscode from 'vscode';
 import nodePath from 'path';
+import crypto from 'crypto';
+
+export function uuid() {
+  return crypto.randomBytes(16).toString('hex');
+}
 
 export function padStart(v: number | string, len: number, filler?: string) {
   return (v + '').padStart(len, filler);
