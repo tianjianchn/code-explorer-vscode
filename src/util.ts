@@ -21,8 +21,8 @@ export function getDateStr(d: Date | number) {
   );
 }
 
-export function getDateTimeStr(d: Date | number) {
-  if (typeof d === 'number') d = new Date(d);
+export function getDateTimeStr(d: Date | number | string) {
+  if (typeof d === 'number' || typeof d === 'string') d = new Date(d);
   return (
     d.getFullYear() +
     '-' +

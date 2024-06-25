@@ -41,7 +41,7 @@ export function registerCommands() {
     const pickItems: (vscode.QuickPickItem & {
       id:
         | 'rename'
-        | 'remove'
+        | 'delete'
         | 'switch'
         | 'refresh'
         | 'selectMarker'
@@ -52,11 +52,11 @@ export function registerCommands() {
       { label: 'Goto a marker of current stack', id: 'selectMarker' },
       { label: 'Goto a marker of ALL stacks', id: 'selectMarkerAll' },
       {
-        label: 'Copy markers of current stack into clipboard',
+        label: 'Copy markers of current stack',
         id: 'copyMarkersIntoClipboard',
       },
       { label: 'Rename current stack', id: 'rename' },
-      { label: 'Remove current stack', id: 'remove' },
+      { label: 'Delete current stack', id: 'delete' },
       { label: 'Switch stack', id: 'switch' },
       { label: 'Refresh stacks', id: 'refresh' },
       { label: 'Open Data File (Edit carefully)', id: 'openDataFile' },
@@ -77,8 +77,8 @@ export function registerCommands() {
         return vscode.commands.executeCommand(
           'codeExplorer.stackView.renameStack'
         );
-      case 'remove':
-        return vscode.commands.executeCommand('codeExplorer.removeStack');
+      case 'delete':
+        return vscode.commands.executeCommand('codeExplorer.deleteStack');
       case 'refresh':
         return vscode.commands.executeCommand('codeExplorer.stackView.refresh');
       case 'switch':
@@ -141,7 +141,7 @@ export function registerCommands() {
     }
   );
 
-  vscode.commands.registerCommand('codeExplorer.removeStack', async () => {
+  vscode.commands.registerCommand('codeExplorer.deleteStack', async () => {
     const { stack, markers } = await markerService.getCurrentStack();
     if (!stack) {
       return;
@@ -152,7 +152,7 @@ export function registerCommands() {
       'Cancel'
     );
     if (ans === 'Delete') {
-      await markerService.removeStack(stack.id);
+      await markerService.deleteStack(stack.id);
     }
   });
 

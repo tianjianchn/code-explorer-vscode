@@ -14,12 +14,17 @@ interface LabelElement {
   label: string;
 }
 
-type TreeElement = Marker | LabelElement;
+interface MarkerElement {
+  type: 'marker';
+  marker: Marker;
+}
+
+type TreeElement = MarkerElement | LabelElement;
 
 export class MarkerTreeViewProvider
   implements
     vscode.TreeDataProvider<TreeElement>,
-    vscode.TreeDragAndDropController<Marker>
+    vscode.TreeDragAndDropController<MarkerElement>
 {
   private static _view: vscode.TreeView<TreeElement>;
   private static _provider: MarkerTreeViewProvider;
@@ -55,10 +60,11 @@ export class MarkerTreeViewProvider
         }
 
         if (el.type !== 'marker') return;
+        const m = el.marker;
 
         const selection = new vscode.Selection(
-          new vscode.Position(el.line, el.column),
-          new vscode.Position(el.line, el.column)
+          new vscode.Position(m.line, m.column),
+          new vscode.Position(m.line, m.column)
         );
 
         // const doc = await vscode.workspace.openTextDocument(el.file);
@@ -69,7 +75,7 @@ export class MarkerTreeViewProvider
         await vscode.commands.executeCommand(
           // see https://code.visualstudio.com/api/references/commands
           'vscode.openWith',
-          vscode.Uri.file(el.file),
+          vscode.Uri.file(m.file),
           'default',
           {
             selection,
@@ -83,16 +89,16 @@ export class MarkerTreeViewProvider
       async (el?: TreeElement) => {
         if (!el || el.type !== 'marker') return;
 
-        await vscode.env.clipboard.writeText(getMarkerClipboardText(el));
+        await vscode.env.clipboard.writeText(getMarkerClipboardText(el.marker));
       }
     );
 
     vscode.commands.registerCommand(
-      'codeExplorer.stackView.removeMarker',
+      'codeExplorer.stackView.deleteMarker',
       async (el?: TreeElement) => {
         if (!el || el.type !== 'marker') return;
 
-        markerService.removeMarker(el.id);
+        markerService.deleteMarker(el.marker.id);
       }
     );
   }
@@ -131,7 +137,7 @@ export class MarkerTreeViewProvider
           },
         ];
       }
-      return markers;
+      return markers.map((m) => ({ type: 'marker', marker: m }));
     }
     return [];
   }
@@ -144,7 +150,8 @@ export class MarkerTreeViewProvider
       };
     }
 
-    const label = getMarkerTitle(element);
+    const m = element.marker;
+    const label = getMarkerTitle(m);
 
     return {
       label,
@@ -153,15 +160,15 @@ export class MarkerTreeViewProvider
         arguments: [element],
         title: 'Click to go',
       },
-      description: getMarkerDesc(element),
-      tooltip: 'Created at ' + getDateTimeStr(element.createdAt),
+      description: getMarkerDesc(m),
+      tooltip: 'Created at ' + getDateTimeStr(m.createdAt),
       collapsibleState: vscode.TreeItemCollapsibleState.None,
       contextValue: 'marker',
     };
   }
 
   handleDrag?(
-    source: readonly Marker[],
+    source: readonly MarkerElement[],
     dataTransfer: vscode.DataTransfer,
     token: vscode.CancellationToken
   ): void | Thenable<void> {
@@ -172,11 +179,11 @@ export class MarkerTreeViewProvider
   }
 
   handleDrop?(
-    target: Marker | undefined,
+    target: MarkerElement | undefined,
     dataTransfer: vscode.DataTransfer,
     token: vscode.CancellationToken
   ): void | Thenable<void> {
-    if (!target) return;
+    if (!target || target.type !== 'marker') return;
 
     const transferItem = dataTransfer.get(
       'application/vnd.code.tree.codeExplorerStackView'
@@ -185,7 +192,7 @@ export class MarkerTreeViewProvider
       return;
     }
 
-    const treeItems: Marker[] = transferItem.value;
-    markerService.moveMarker(treeItems[0].id, target.id);
+    const treeItems = transferItem.value;
+    markerService.moveMarker(treeItems[0].marker.id, target.marker.id);
   }
 }
