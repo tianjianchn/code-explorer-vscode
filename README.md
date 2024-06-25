@@ -17,6 +17,7 @@ Explore codebase efficiently in VSCode with adding markers into a stack and swit
 - Copy markers as markdown into clipboard.
 - Data is saved in workspace .vscode dir with JSON format.
 - Tag markers.
+- Give marker code an alias (title).
 
 ## Usage
 
