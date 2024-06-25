@@ -32,11 +32,13 @@ interface FileContent {
   currentStackId: string | null;
 }
 
+const WATCH_DEBOUNCE_TIME = 300; // ms
+
 class MarkerService {
   private markers: Marker[] = [];
   private stacks: Stack[] = [];
   private currentStackId: string | null = null;
-  private loaded = new Future();
+  private loading = new Future();
 
   private isSavingData = false;
   private watcher?: vscode.FileSystemWatcher;
@@ -58,7 +60,7 @@ class MarkerService {
   }
 
   async getCurrentStack() {
-    await this.loaded.promise;
+    await this.loading.promise;
 
     const markers = this.markers.filter(
       (marker) => marker.stackId === this.currentStackId
@@ -68,12 +70,12 @@ class MarkerService {
   }
 
   async getStacks() {
-    await this.loaded.promise;
+    await this.loading.promise;
     return this.stacks;
   }
 
   async getAllMarkers() {
-    await this.loaded.promise;
+    await this.loading.promise;
     return this.markers;
   }
 
@@ -190,7 +192,7 @@ class MarkerService {
       return;
     }
 
-    this.loaded = new Future();
+    this.loading = new Future();
 
     const dir = context.storageUri;
     await vscode.workspace.fs.createDirectory(dir);
@@ -229,7 +231,7 @@ class MarkerService {
       }
     }
 
-    this.loaded.resolve();
+    this.loading.resolve();
   }
 
   private async saveData() {
@@ -254,7 +256,9 @@ class MarkerService {
       // output.log('Saving data to ' + file.toString());
       await vscode.workspace.fs.writeFile(file, content);
     } finally {
-      this.isSavingData = false;
+      setTimeout(() => {
+        this.isSavingData = false;
+      }, WATCH_DEBOUNCE_TIME + 10);
     }
 
     this._onDataUpdatedEmitter.fire();
@@ -267,18 +271,30 @@ class MarkerService {
     const watcher = vscode.workspace.createFileSystemWatcher(
       new vscode.RelativePattern(context.storageUri, 'code-explorer.json')
     );
+
+    let action: 'create' | 'change' | 'delete' = 'change';
     const onChange = debounce(async (file) => {
       if (this.isSavingData) return;
 
       output.log(
-        'Detected data file change by external write, try to reload data'
+        'Detected data file ' + action + ' by external, try to reload data'
       );
       await this.loadData(true);
       this._onDataUpdatedEmitter.fire();
-    }, 16);
-    watcher.onDidCreate(onChange);
-    watcher.onDidChange(onChange);
-    watcher.onDidDelete(onChange);
+    }, WATCH_DEBOUNCE_TIME);
+
+    watcher.onDidCreate((f) => {
+      action = 'create';
+      onChange(f);
+    });
+    watcher.onDidChange((f) => {
+      action = 'change';
+      onChange(f);
+    });
+    watcher.onDidDelete((f) => {
+      action = 'delete';
+      onChange(f);
+    });
 
     return watcher;
   }

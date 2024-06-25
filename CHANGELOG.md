@@ -6,6 +6,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+- Avoid reloading data by watcher when first activated
+
 ## 0.1.10
 
 - Create data file automatically when not found
