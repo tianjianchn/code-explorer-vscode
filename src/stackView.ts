@@ -103,6 +103,21 @@ export class MarkerTreeViewProvider
     );
 
     vscode.commands.registerCommand(
+      'codeExplorer.stackView.setMarkerTitle',
+      async (el?: TreeElement) => {
+        if (!el || el.type !== 'marker') return;
+
+        const title = await vscode.window.showInputBox({
+          title: 'Set Marker Title',
+          placeHolder: 'Input the title',
+          value: el.marker.title,
+        });
+        if (title === undefined) return;
+        await markerService.setTitle(el.marker.id, title);
+      }
+    );
+
+    vscode.commands.registerCommand(
       'codeExplorer.stackView.addTag',
       async (el?: TreeElement) => {
         if (!el || el.type !== 'marker') return;
@@ -198,6 +213,11 @@ export class MarkerTreeViewProvider
       total += len;
     });
 
+    let tooltip: string | vscode.MarkdownString =
+      'Created at ' + getDateTimeStr(m.createdAt);
+    if (m.title)
+      tooltip = new vscode.MarkdownString('Code: `' + m.text + '`. ' + tooltip);
+
     return {
       label: { label, highlights },
       command: {
@@ -206,7 +226,7 @@ export class MarkerTreeViewProvider
         title: 'Click to go',
       },
       description: getMarkerDesc(m),
-      tooltip: 'Created at ' + getDateTimeStr(m.createdAt),
+      tooltip,
       collapsibleState: vscode.TreeItemCollapsibleState.None,
       contextValue: 'marker',
     };

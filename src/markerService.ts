@@ -149,6 +149,15 @@ class MarkerService {
     await this.saveData();
   }
 
+  async setTitle(markerId: string, title: string) {
+    const marker = this.markers.find((m) => m.id === markerId);
+    if (!marker) return;
+
+    marker.title = title === '' ? undefined : title;
+
+    await this.saveData();
+  }
+
   async addTag(markerId: string, tag: string) {
     const marker = this.markers.find((m) => m.id === markerId);
     if (!marker) return;
@@ -421,7 +430,11 @@ export function getMarkerDesc(marker: Marker) {
 }
 
 export function getMarkerClipboardText(marker: Marker) {
-  return `- ${getRelativeFilePath(marker.file)}:${marker.line + 1}:${
+  const tags = marker.tags?.map((t) => '[' + t + ']').join('') ?? '';
+  const loc = `${getRelativeFilePath(marker.file)}:${marker.line + 1}:${
     marker.column + 1
-  } ${marker.text} ${marker.title ? '# ' + marker.title : ''}`;
+  }`;
+  const title = marker.title ? ' # ' + marker.title : '';
+
+  return `- ${tags}${loc} ${marker.text}${title}`;
 }

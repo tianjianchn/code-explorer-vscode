@@ -84,6 +84,12 @@
         "category": "Code Explorer"
       },
       {
+        "command": "codeExplorer.stackView.setMarkerTitle",
+        "title": "Set Title",
+        "category": "Code Explorer",
+        "enablement": "view == codeExplorer.stackView"
+      },
+      {
         "command": "codeExplorer.stackView.addTag",
         "title": "Add a Tag",
         "category": "Code Explorer",
@@ -160,14 +166,19 @@
           "group": "inline"
         },
         {
-          "command": "codeExplorer.stackView.addTag",
+          "command": "codeExplorer.stackView.setMarkerTitle",
           "when": "view == codeExplorer.stackView && viewItem == marker",
           "group": "0"
         },
         {
+          "command": "codeExplorer.stackView.addTag",
+          "when": "view == codeExplorer.stackView && viewItem == marker",
+          "group": "1"
+        },
+        {
           "command": "codeExplorer.stackView.deleteTag",
           "when": "view == codeExplorer.stackView && viewItem == marker",
-          "group": "0"
+          "group": "1"
         },
         {
           "command": "codeExplorer.stackView.copyMarker",
