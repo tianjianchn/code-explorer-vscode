@@ -4,9 +4,9 @@ All notable changes to the "code-explorer" extension will be documented in this 
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## [Unreleased]
+## 0.1.12
 
--
+- Save data file into workspace .vscode dir
 
 ## 0.1.11
 
