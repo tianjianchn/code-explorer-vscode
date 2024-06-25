@@ -44,7 +44,12 @@
         "category": "Code Explorer"
       },
       {
-        "command": "codeExplorer.stackView.actions",
+        "command": "codeExplorer.copyMarkersIntoClipboard",
+        "title": "Copy Markers of Current Stack into Clipboard",
+        "category": "Code Explorer"
+      },
+      {
+        "command": "codeExplorer.actions",
         "title": "Stack Actions",
         "category": "Code Explorer",
         "icon": "$(tools)",
@@ -77,6 +82,12 @@
         "command": "codeExplorer.stackView.openMarker",
         "title": "Open the Marker",
         "category": "Code Explorer"
+      },
+      {
+        "command": "codeExplorer.stackView.copyMarker",
+        "title": "Copy Marker into Clipboard",
+        "category": "Code Explorer",
+        "enablement": "view == codeExplorer.stackView"
       },
       {
         "command": "codeExplorer.stackView.removeMarker",
@@ -132,9 +143,19 @@
           "group": "inline"
         },
         {
-          "command": "codeExplorer.stackView.removeMarker",
+          "command": "codeExplorer.stackView.copyMarker",
           "when": "view == codeExplorer.stackView && viewItem == marker",
           "group": "0"
+        },
+        {
+          "command": "codeExplorer.copyMarkersIntoClipboard",
+          "when": "view == codeExplorer.stackView && viewItem == marker",
+          "group": "0"
+        },
+        {
+          "command": "codeExplorer.stackView.removeMarker",
+          "when": "view == codeExplorer.stackView && viewItem == marker",
+          "group": "1"
         }
       ]
     }

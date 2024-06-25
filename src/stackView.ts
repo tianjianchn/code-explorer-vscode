@@ -247,6 +247,15 @@ export class MarkerTreeViewProvider
     );
 
     vscode.commands.registerCommand(
+      'codeExplorer.stackView.copyMarker',
+      async (el?: TreeElement) => {
+        if (!el || el.type !== 'marker') return;
+
+        await vscode.env.clipboard.writeText(getMarkerClipboardText(el));
+      }
+    );
+
+    vscode.commands.registerCommand(
       'codeExplorer.stackView.removeMarker',
       async (el?: TreeElement) => {
         if (!el || el.type !== 'marker') return;

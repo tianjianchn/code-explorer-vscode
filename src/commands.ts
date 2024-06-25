@@ -28,4 +28,15 @@ export function registerCommands() {
       file: editor.document.fileName,
     });
   });
+  vscode.commands.registerCommand(
+    'codeExplorer.copyMarkersIntoClipboard',
+    async () => {
+      const { stack, markers } = await markerService.getCurrentStack();
+      if (!stack) return;
+
+      const text = markers.map((m) => getMarkerClipboardText(m)).join('\n');
+
+      await vscode.env.clipboard.writeText(text);
+    }
+  );
 }
