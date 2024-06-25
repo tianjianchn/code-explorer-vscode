@@ -1,12 +1,21 @@
 Code Explorer
 
-> Mark code like bookmark!
+> Mark code like bookmark and more!
 
 Explore codebase efficiently in VSCode with adding markers into a stack and switching among them.
 
 ![](https://vsmarketplacebadges.dev/version/tianjianchn.code-explorer.png) ![](https://vsmarketplacebadges.dev/installs/tianjianchn.code-explorer.png)
 
 ![](./media/example.jpeg)
+
+## Features
+
+- Add markers for code of files.
+- Organize markers by stacks which are more like code call chain.
+- (TODO) Indent/Unindent markers to make it more like call hierarchy.
+- Drag and drop markers order.
+- Copy markers as markdown into clipboard.
+- Data is saved in workspace .vscode dir with JSON format.
 
 ## Usage
 
