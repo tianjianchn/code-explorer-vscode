@@ -4,6 +4,10 @@ All notable changes to the "code-explorer" extension will be documented in this 
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 0.1.16
+
+- Support icon set on a marker
+
 ## 0.1.15
 
 - Support title set on a marker
