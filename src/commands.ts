@@ -211,6 +211,12 @@ export function registerCommands() {
 
   vscode.commands.registerCommand('codeExplorer.openDataFile', async () => {
     const file = markerService.getDataFilePath();
+    if (!file) {
+      vscode.window.showWarningMessage(
+        'No folder is opened in this VSCode window'
+      );
+      return;
+    }
     await vscode.commands.executeCommand('vscode.open', file);
   });
 }
