@@ -1,5 +1,11 @@
 import * as vscode from 'vscode';
-import { Marker, markerService } from './markerService';
+import {
+  Marker,
+  getMarkerClipboardText,
+  getMarkerDesc,
+  getMarkerTitle,
+  markerService,
+} from './markerService';
 import { extensionEnv } from './extensionEnv';
 import { getDateTimeStr, getRelativeFilePath } from './util';
 
@@ -34,191 +40,17 @@ export class MarkerTreeViewProvider
   }
 
   private static registerCommands() {
-    vscode.commands.registerCommand(
-      'codeExplorer.stackView.actions',
-      async () => {
-        const { stack } = await markerService.getCurrentStack();
-
-        const pickItems: (vscode.QuickPickItem & {
-          id:
-            | 'rename'
-            | 'remove'
-            | 'switch'
-            | 'refresh'
-            | 'selectMarker'
-            | 'selectMarkerAll';
-        })[] = [
-          { label: 'Goto a marker of current stack', id: 'selectMarker' },
-          { label: 'Goto a marker of all stacks', id: 'selectMarkerAll' },
-          { label: 'Rename current stack', id: 'rename' },
-          { label: 'Remove current stack', id: 'remove' },
-          { label: 'Switch stack', id: 'switch' },
-          { label: 'Refresh stacks', id: 'refresh' },
-        ];
-
-        const selected = await vscode.window.showQuickPick(pickItems, {
-          title: 'Stack Actions of Code Explorer',
-          placeHolder: 'Current stack: ' + (stack ? stack.title : '<none>'),
-        });
-        if (!selected) return;
-
-        switch (selected.id) {
-          case 'selectMarker':
-            return vscode.commands.executeCommand(
-              'codeExplorer.stackView.selectMarker'
-            );
-          case 'selectMarkerAll':
-            return vscode.commands.executeCommand(
-              'codeExplorer.stackView.selectMarkerAll'
-            );
-          case 'rename':
-            return vscode.commands.executeCommand(
-              'codeExplorer.stackView.renameStack'
-            );
-          case 'remove':
-            return vscode.commands.executeCommand(
-              'codeExplorer.stackView.removeStack'
-            );
-          case 'refresh':
-            return vscode.commands.executeCommand(
-              'codeExplorer.stackView.refresh'
-            );
-          case 'switch':
-            return vscode.commands.executeCommand(
-              'codeExplorer.stackView.loadStack'
-            );
-          default:
-            const exhausted: never = selected.id;
-            throw new Error('Unhandled action: ' + exhausted);
-        }
-      }
-    );
-
     vscode.commands.registerCommand('codeExplorer.stackView.refresh', () => {
       this._provider.refresh();
     });
     markerService.onDataUpdated(() => this._provider.refresh());
 
     vscode.commands.registerCommand(
-      'codeExplorer.stackView.loadStack',
-      async () => {
-        const [stacks, { stack: curr }] = await Promise.all([
-          markerService.getStacks(),
-          markerService.getCurrentStack(),
-        ]);
-        const pickItems: (vscode.QuickPickItem & { id: string | null })[] =
-          stacks.map((s) => ({
-            label: (s.id === curr?.id ? '* ' : '') + s.title,
-            id: s.id,
-          }));
-        pickItems.unshift({
-          label: 'Create new stack',
-          id: null,
-          picked: false,
-        });
-
-        const selected = await vscode.window.showQuickPick(pickItems, {
-          title: 'Switch Stack of Code Explorer',
-          placeHolder: 'Current stack: ' + (curr?.title ?? '<none>'),
-          matchOnDescription: true,
-          matchOnDetail: true,
-        });
-        if (!selected) return;
-
-        if (!selected.id) {
-          await markerService.createStack();
-        } else {
-          await markerService.switchStack(selected.id);
-        }
-      }
-    );
-
-    vscode.commands.registerCommand(
-      'codeExplorer.stackView.renameStack',
-      async () => {
-        const { stack } = await markerService.getCurrentStack();
-        if (!stack) {
-          return;
-        }
-        const ans = await vscode.window.showInputBox({
-          placeHolder: stack.title,
-        });
-        if (!ans) return;
-        await markerService.renameStack(stack.id, ans);
-      }
-    );
-
-    vscode.commands.registerCommand(
-      'codeExplorer.stackView.removeStack',
-      async () => {
-        const { stack, markers } = await markerService.getCurrentStack();
-        if (!stack) {
-          return;
-        }
-        const ans = await vscode.window.showInformationMessage(
-          'Do you really want to delete stack: ' + stack.title + '?',
-          'Delete',
-          'Cancel'
-        );
-        if (ans === 'Delete') {
-          await markerService.removeStack(stack.id);
-        }
-      }
-    );
-
-    vscode.commands.registerCommand(
-      'codeExplorer.stackView.selectMarker',
-      async () => {
-        const { stack, markers } = await markerService.getCurrentStack();
-
-        await showMarkers(
-          'Select a marker of current stack: ' + stack?.title,
-          markers
-        );
-      }
-    );
-
-    vscode.commands.registerCommand(
-      'codeExplorer.stackView.selectMarkerAll',
-      async () => {
-        const markers = await markerService.getAllMarkers();
-        await showMarkers('Select a marker in ALL stacks', markers);
-      }
-    );
-
-    async function showMarkers(title: string, markers: Marker[]) {
-      if (!markers.length) {
-        await vscode.window.showQuickPick([{ label: 'No markers' }]);
-        return;
-      }
-
-      const pickItems: (vscode.QuickPickItem & { marker: Marker })[] =
-        markers.map((m) => ({
-          label: getMarkerTitle(m),
-          description: getMarkerDesc(m),
-          marker: m,
-        }));
-
-      const selected = await vscode.window.showQuickPick(pickItems, {
-        title,
-        matchOnDescription: true,
-        matchOnDetail: true,
-      });
-      if (!selected) return;
-
-      const selectedMarker = selected.marker;
-      await vscode.commands.executeCommand(
-        'codeExplorer.stackView.openMarker',
-        selectedMarker
-      );
-    }
-
-    vscode.commands.registerCommand(
       'codeExplorer.stackView.openMarker',
       async (el?: TreeElement) => {
         if (!el) {
           return await vscode.commands.executeCommand(
-            'codeExplorer.stackView.selectMarker'
+            'codeExplorer.selectMarker'
           );
         }
 
@@ -356,14 +188,4 @@ export class MarkerTreeViewProvider
     const treeItems: Marker[] = transferItem.value;
     markerService.moveMarker(treeItems[0].id, target.id);
   }
-}
-
-function getMarkerTitle(marker: Marker) {
-  return marker.title ?? marker.text;
-}
-
-function getMarkerDesc(marker: Marker) {
-  return `${getRelativeFilePath(marker.file)}:${marker.line + 1}:${
-    marker.column + 1
-  }`;
 }

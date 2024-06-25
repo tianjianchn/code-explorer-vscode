@@ -34,12 +34,12 @@
         "category": "Code Explorer"
       },
       {
-        "command": "codeExplorer.stackView.selectMarker",
+        "command": "codeExplorer.selectMarker",
         "title": "Select a Marker of Current Stack",
         "category": "Code Explorer"
       },
       {
-        "command": "codeExplorer.stackView.selectMarkerAll",
+        "command": "codeExplorer.selectMarkerAll",
         "title": "Select a Marker of All Stacks",
         "category": "Code Explorer"
       },
@@ -62,13 +62,13 @@
         "icon": "$(refresh)"
       },
       {
-        "command": "codeExplorer.stackView.loadStack",
+        "command": "codeExplorer.loadStack",
         "title": "Switch Stack",
         "category": "Code Explorer",
         "icon": "$(arrow-swap)"
       },
       {
-        "command": "codeExplorer.stackView.removeStack",
+        "command": "codeExplorer.removeStack",
         "title": "Remove Current Stack",
         "category": "Code Explorer",
         "icon": "$(trash)"
@@ -126,12 +126,12 @@
       ],
       "view/title": [
         {
-          "command": "codeExplorer.stackView.loadStack",
+          "command": "codeExplorer.loadStack",
           "when": "view == codeExplorer.stackView",
           "group": "navigation"
         },
         {
-          "command": "codeExplorer.stackView.actions",
+          "command": "codeExplorer.actions",
           "when": "view == codeExplorer.stackView",
           "group": "navigation"
         }

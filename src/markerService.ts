@@ -1,6 +1,13 @@
 import * as vscode from 'vscode';
 import { extensionEnv } from './extensionEnv';
-import { Future, debounce, getDateStr, padStart, uuid } from './util';
+import {
+  Future,
+  debounce,
+  getDateStr,
+  getRelativeFilePath,
+  padStart,
+  uuid,
+} from './util';
 import { output } from './output';
 
 export interface Marker {
@@ -310,3 +317,19 @@ class MarkerService {
 }
 
 export const markerService = new MarkerService();
+
+export function getMarkerTitle(marker: Marker) {
+  return marker.title ?? marker.text;
+}
+
+export function getMarkerDesc(marker: Marker) {
+  return `${getRelativeFilePath(marker.file)}:${marker.line + 1}:${
+    marker.column + 1
+  }`;
+}
+
+export function getMarkerClipboardText(marker: Marker) {
+  return `- ${getRelativeFilePath(marker.file)}:${marker.line + 1}:${
+    marker.column + 1
+  } ${marker.text} # ${marker.title}`;
+}
