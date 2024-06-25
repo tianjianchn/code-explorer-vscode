@@ -223,9 +223,9 @@ class MarkerService {
       this.stacks = [];
       this.currentStackId = null;
       if (e instanceof vscode.FileSystemError && e.code === 'FileNotFound') {
-        this.saveData().catch((e2) => {
-          output.log('Failed to create data file: ' + String(e2));
-        });
+        // this.saveData().catch((e2) => {
+        //   output.log('Failed to create data file: ' + String(e2));
+        // });
       } else {
         output.log('Error to load data:' + String(e));
       }
@@ -267,7 +267,7 @@ class MarkerService {
     } finally {
       setTimeout(() => {
         this.isSavingData = false;
-      }, WATCH_DEBOUNCE_TIME + 10);
+      }, /* Mute watching */ WATCH_DEBOUNCE_TIME + 500);
     }
 
     this._onDataUpdatedEmitter.fire();
@@ -282,7 +282,7 @@ class MarkerService {
     );
 
     let action: 'create' | 'change' | 'delete' = 'change';
-    const onChange = debounce(async (file) => {
+    const onChange = debounce(async (f) => {
       if (this.isSavingData) return;
 
       output.log(
