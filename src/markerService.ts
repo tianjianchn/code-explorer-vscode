@@ -15,6 +15,7 @@ export interface Marker {
   id: string;
   title?: string;
   tags?: string[];
+  icon?: string;
   file: string;
   line: number;
   column: number;
@@ -154,6 +155,15 @@ class MarkerService {
     if (!marker) return;
 
     marker.title = title === '' ? undefined : title;
+
+    await this.saveData();
+  }
+
+  async setIcon(markerId: string, icon: string) {
+    const marker = this.markers.find((m) => m.id === markerId);
+    if (!marker) return;
+
+    marker.icon = icon === '' ? undefined : icon;
 
     await this.saveData();
   }
@@ -319,12 +329,13 @@ class MarkerService {
 
       const markers = this.markers.map((m) => {
         const r: Marker = {
-          text: m.text,
           title: m.title,
+          text: m.text,
           tags: m.tags,
           file: m.file,
           line: m.line,
           column: m.column,
+          icon: m.icon,
           createdAt: m.createdAt,
           id: m.id,
           stackId: m.stackId,

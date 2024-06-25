@@ -8,6 +8,7 @@ import {
 } from './markerService';
 import { extensionEnv } from './extensionEnv';
 import { getDateTimeStr, getRelativeFilePath } from './util';
+import { vscodeIcons } from './icons';
 
 interface LabelElement {
   type: 'label';
@@ -118,6 +119,27 @@ export class MarkerTreeViewProvider
     );
 
     vscode.commands.registerCommand(
+      'codeExplorer.stackView.setMarkerIcon',
+      async (el?: TreeElement) => {
+        if (!el || el.type !== 'marker') return;
+
+        const pickItems: vscode.QuickPickItem[] = vscodeIcons.map((t) => ({
+          label: t,
+          iconPath: new vscode.ThemeIcon(t),
+        }));
+        const icon = await vscode.window.showQuickPick(
+          [{ label: '' }].concat(pickItems),
+          {
+            title: 'Set Marker Icon',
+            placeHolder: 'Select an icon',
+          }
+        );
+        if (icon === undefined) return;
+        await markerService.setIcon(el.marker.id, icon.label);
+      }
+    );
+
+    vscode.commands.registerCommand(
       'codeExplorer.stackView.addTag',
       async (el?: TreeElement) => {
         if (!el || el.type !== 'marker') return;
@@ -220,6 +242,7 @@ export class MarkerTreeViewProvider
 
     return {
       label: { label, highlights },
+      iconPath: m.icon ? new vscode.ThemeIcon(m.icon) : undefined,
       command: {
         command: 'codeExplorer.stackView.openMarker',
         arguments: [element],
