@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import nodePath from 'path';
 import { extensionEnv } from './extensionEnv';
 import {
   Future,
@@ -192,6 +193,16 @@ class MarkerService {
     await this.saveData();
   }
 
+  getDataFilePath() {
+    const context = extensionEnv.getExtensionContext();
+    if (!context.storageUri) {
+      // No workspace opened
+      return;
+    }
+    const file = vscode.Uri.joinPath(context.storageUri, 'code-explorer.json');
+    return file;
+  }
+
   private async loadData(reload: boolean = false) {
     const context = extensionEnv.getExtensionContext();
     if (!context.storageUri) {
@@ -201,9 +212,9 @@ class MarkerService {
 
     this.loading = new Future();
 
-    const dir = context.storageUri;
-    await vscode.workspace.fs.createDirectory(dir);
-    const file = vscode.Uri.joinPath(context.storageUri, 'code-explorer.json');
+    const file = this.getDataFilePath();
+    if (!file) return;
+    await vscode.workspace.fs.createDirectory(vscode.Uri.joinPath(file, '..'));
 
     try {
       if (!reload) output.log('Loading data from ' + file.toString());
@@ -242,16 +253,11 @@ class MarkerService {
   }
 
   private async saveData() {
-    const context = extensionEnv.getExtensionContext();
-    if (!context.storageUri) return;
-
     try {
-      this.isSavingData = true;
+      const file = this.getDataFilePath();
+      if (!file) return;
 
-      const file = vscode.Uri.joinPath(
-        context.storageUri,
-        'code-explorer.json'
-      );
+      this.isSavingData = true;
 
       // Group markers of same stack together
       const sortedMarkers = [...this.markers].sort((a, b) => {
@@ -284,8 +290,14 @@ class MarkerService {
     const context = extensionEnv.getExtensionContext();
     if (!context.storageUri) return;
 
+    const file = this.getDataFilePath();
+    if (!file) return;
+
     const watcher = vscode.workspace.createFileSystemWatcher(
-      new vscode.RelativePattern(context.storageUri, 'code-explorer.json')
+      new vscode.RelativePattern(
+        vscode.Uri.joinPath(file, '..'),
+        nodePath.basename(file.path)
+      )
     );
 
     let action: 'create' | 'change' | 'delete' = 'change';

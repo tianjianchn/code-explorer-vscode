@@ -6,6 +6,13 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## 0.1.11
+
+- Add `Open Data File` command
+- Rename some commands
+- Add copy markers commands
+- Optimize watching muting
+- Group markers of same stack together in the data file
 - Avoid reloading data by watcher when first activated
 
 ## 0.1.10

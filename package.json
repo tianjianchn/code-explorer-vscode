@@ -2,7 +2,7 @@
   "name": "code-explorer",
   "displayName": "Code Explorer",
   "description": "Explore code efficiently with a stack",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "license": "MIT",
   "repository": {
     "url": "https://github.com/tianjianchn/code-explorer-vscode"
@@ -46,6 +46,11 @@
       {
         "command": "codeExplorer.copyMarkersIntoClipboard",
         "title": "Copy Markers of Current Stack into Clipboard",
+        "category": "Code Explorer"
+      },
+      {
+        "command": "codeExplorer.openDataFile",
+        "title": "Open Data File (Edit carefully)",
         "category": "Code Explorer"
       },
       {

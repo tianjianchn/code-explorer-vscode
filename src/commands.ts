@@ -46,6 +46,7 @@ export function registerCommands() {
         | 'refresh'
         | 'selectMarker'
         | 'selectMarkerAll'
+        | 'openDataFile'
         | 'copyMarkersIntoClipboard';
     })[] = [
       { label: 'Goto a marker of current stack', id: 'selectMarker' },
@@ -58,6 +59,7 @@ export function registerCommands() {
       { label: 'Remove current stack', id: 'remove' },
       { label: 'Switch stack', id: 'switch' },
       { label: 'Refresh stacks', id: 'refresh' },
+      { label: 'Open Data File (Edit carefully)', id: 'openDataFile' },
     ];
 
     const selected = await vscode.window.showQuickPick(pickItems, {
@@ -85,6 +87,8 @@ export function registerCommands() {
         return vscode.commands.executeCommand(
           'codeExplorer.copyMarkersIntoClipboard'
         );
+      case 'openDataFile':
+        return vscode.commands.executeCommand('codeExplorer.openDataFile');
       default:
         const exhausted: never = selected.id;
         throw new Error('Unhandled action: ' + exhausted);
@@ -204,4 +208,9 @@ export function registerCommands() {
       await vscode.env.clipboard.writeText(text);
     }
   );
+
+  vscode.commands.registerCommand('codeExplorer.openDataFile', async () => {
+    const file = markerService.getDataFilePath();
+    await vscode.commands.executeCommand('vscode.open', file);
+  });
 }
