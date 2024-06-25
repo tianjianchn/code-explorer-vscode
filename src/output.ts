@@ -9,6 +9,10 @@ class Output {
     this.channel = vscode.window.createOutputChannel('Code Explorer');
   }
 
+  dispose() {
+    this.channel.dispose();
+  }
+
   log(message: string) {
     const str = `${getDateTimeStr(new Date())} ${message}`;
     this.channel.appendLine(str);

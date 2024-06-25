@@ -6,6 +6,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+- Watch data file(create/change/delete) to reload data automatically
 - Allow filter on description when running select marker commands
 
 ## 0.1.8

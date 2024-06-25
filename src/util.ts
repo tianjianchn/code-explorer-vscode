@@ -86,3 +86,22 @@ export class Future<T = void> {
     return this._rejected || this._resolved;
   }
 }
+
+export function debounce<T extends (...args: unknown[]) => void>(
+  fn: T,
+  wait: number = 0
+): T {
+  let timer: NodeJS.Timeout | null = null;
+
+  return function debounced(this: unknown, ...args: unknown[]) {
+    if (timer) {
+      clearTimeout(timer);
+      timer = null;
+    }
+
+    timer = setTimeout(() => {
+      timer = null;
+      fn.apply(this, args);
+    }, wait);
+  } as T;
+}

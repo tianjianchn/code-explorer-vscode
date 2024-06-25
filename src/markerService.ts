@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { extensionEnv } from './extensionEnv';
-import { Future, getDateStr, padStart, uuid } from './util';
+import { Future, debounce, getDateStr, padStart, uuid } from './util';
 import { output } from './output';
 
 export interface Marker {
@@ -38,16 +38,23 @@ class MarkerService {
   private currentStackId: string | null = null;
   private loaded = new Future();
 
-  private nextId = 1;
+  private isSavingData = false;
+  private watcher?: vscode.FileSystemWatcher;
 
   private _onDataUpdatedEmitter: vscode.EventEmitter<void> =
     new vscode.EventEmitter<void>();
   readonly onDataUpdated: vscode.Event<void> = this._onDataUpdatedEmitter.event;
 
   constructor() {
-    extensionEnv.onActivated(() => {
-      this.loadData();
+    extensionEnv.onActivated(async () => {
+      this.watcher = this.watchDataFile();
+      await this.loadData();
     });
+  }
+
+  dispose() {
+    this._onDataUpdatedEmitter.dispose();
+    this.watcher?.dispose();
   }
 
   async getCurrentStack() {
@@ -176,19 +183,21 @@ class MarkerService {
     await this.saveData();
   }
 
-  private async loadData() {
+  private async loadData(reload: boolean = false) {
     const context = extensionEnv.getExtensionContext();
     if (!context.storageUri) {
       // No workspace opened
       return;
     }
 
+    this.loaded = new Future();
+
     const dir = context.storageUri;
     await vscode.workspace.fs.createDirectory(dir);
     const file = vscode.Uri.joinPath(context.storageUri, 'code-explorer.json');
 
     try {
-      output.log('Loading data from ' + file.toString());
+      if (!reload) output.log('Loading data from ' + file.toString());
       const fileData = await vscode.workspace.fs.readFile(file);
       const dec = new TextDecoder('utf-8');
       const content = dec.decode(fileData);
@@ -208,7 +217,10 @@ class MarkerService {
       this.stacks = data.stacks;
       this.currentStackId = data.currentStackId;
     } catch (e) {
-      output.log('Error to read code explorer data:' + String(e));
+      output.log('Error to load data:' + String(e));
+      this.markers = [];
+      this.stacks = [];
+      this.currentStackId = null;
     }
 
     this.loaded.resolve();
@@ -218,19 +230,51 @@ class MarkerService {
     const context = extensionEnv.getExtensionContext();
     if (!context.storageUri) return;
 
-    const file = vscode.Uri.joinPath(context.storageUri, 'code-explorer.json');
-    const data: FileContent = {
-      currentStackId: this.currentStackId,
-      stacks: this.stacks,
-      markers: this.markers,
-    };
-    const enc = new TextEncoder();
-    const content = enc.encode(JSON.stringify(data, null, 2));
+    try {
+      this.isSavingData = true;
 
-    // output.log('Saving data to ' + file.toString());
-    await vscode.workspace.fs.writeFile(file, content);
+      const file = vscode.Uri.joinPath(
+        context.storageUri,
+        'code-explorer.json'
+      );
+      const data: FileContent = {
+        currentStackId: this.currentStackId,
+        stacks: this.stacks,
+        markers: this.markers,
+      };
+      const enc = new TextEncoder();
+      const content = enc.encode(JSON.stringify(data, null, 2));
+
+      // output.log('Saving data to ' + file.toString());
+      await vscode.workspace.fs.writeFile(file, content);
+    } finally {
+      this.isSavingData = false;
+    }
 
     this._onDataUpdatedEmitter.fire();
+  }
+
+  private watchDataFile() {
+    const context = extensionEnv.getExtensionContext();
+    if (!context.storageUri) return;
+
+    const watcher = vscode.workspace.createFileSystemWatcher(
+      new vscode.RelativePattern(context.storageUri, 'code-explorer.json')
+    );
+    const onChange = debounce(async (file) => {
+      if (this.isSavingData) return;
+
+      output.log(
+        'Detected data file change by external write, try to reload data'
+      );
+      await this.loadData(true);
+      this._onDataUpdatedEmitter.fire();
+    }, 16);
+    watcher.onDidCreate(onChange);
+    watcher.onDidChange(onChange);
+    watcher.onDidDelete(onChange);
+
+    return watcher;
   }
 }
 

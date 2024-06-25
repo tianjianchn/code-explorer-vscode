@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { markerService } from './markerService';
+
 export function registerCommands() {
   vscode.commands.registerCommand('codeExplorer.addMarker', async () => {
     const editor = vscode.window.activeTextEditor;
