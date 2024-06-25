@@ -6,6 +6,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+-
+
 ## 0.1.11
 
 - Add `Open Data File` command
