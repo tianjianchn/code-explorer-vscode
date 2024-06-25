@@ -84,6 +84,18 @@
         "category": "Code Explorer"
       },
       {
+        "command": "codeExplorer.stackView.addTag",
+        "title": "Add a Tag",
+        "category": "Code Explorer",
+        "enablement": "view == codeExplorer.stackView"
+      },
+      {
+        "command": "codeExplorer.stackView.deleteTag",
+        "title": "Delete a Tag",
+        "category": "Code Explorer",
+        "enablement": "view == codeExplorer.stackView"
+      },
+      {
         "command": "codeExplorer.stackView.openMarker",
         "title": "Open the Marker",
         "category": "Code Explorer"
@@ -148,24 +160,34 @@
           "group": "inline"
         },
         {
-          "command": "codeExplorer.stackView.copyMarker",
+          "command": "codeExplorer.stackView.addTag",
           "when": "view == codeExplorer.stackView && viewItem == marker",
           "group": "0"
+        },
+        {
+          "command": "codeExplorer.stackView.deleteTag",
+          "when": "view == codeExplorer.stackView && viewItem == marker",
+          "group": "0"
+        },
+        {
+          "command": "codeExplorer.stackView.copyMarker",
+          "when": "view == codeExplorer.stackView && viewItem == marker",
+          "group": "5"
         },
         {
           "command": "codeExplorer.copyMarkersIntoClipboard",
           "when": "view == codeExplorer.stackView && viewItem == marker",
-          "group": "0"
+          "group": "5"
         },
         {
           "command": "codeExplorer.stackView.deleteMarker",
           "when": "view == codeExplorer.stackView && viewItem == marker",
-          "group": "1"
+          "group": "8"
         },
         {
           "command": "codeExplorer.deleteStack",
           "when": "view == codeExplorer.stackView && viewItem == marker",
-          "group": "2"
+          "group": "9"
         }
       ]
     }

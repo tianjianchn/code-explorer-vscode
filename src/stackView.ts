@@ -101,6 +101,43 @@ export class MarkerTreeViewProvider
         markerService.deleteMarker(el.marker.id);
       }
     );
+
+    vscode.commands.registerCommand(
+      'codeExplorer.stackView.addTag',
+      async (el?: TreeElement) => {
+        if (!el || el.type !== 'marker') return;
+
+        const tag = await vscode.window.showInputBox({
+          title: 'Add Marker Tag',
+          placeHolder: 'Input the tag',
+        });
+        if (!tag) return;
+        await markerService.addTag(el.marker.id, tag);
+      }
+    );
+
+    vscode.commands.registerCommand(
+      'codeExplorer.stackView.deleteTag',
+      async (el?: TreeElement) => {
+        if (!el || el.type !== 'marker') return;
+
+        const tags = el.marker.tags;
+        if (!tags || !tags.length) {
+          return vscode.window.showInformationMessage('No tags to delete');
+        }
+
+        const pickItems: vscode.QuickPickItem[] = tags.map((t) => ({
+          label: t,
+        }));
+
+        const item = await vscode.window.showQuickPick(pickItems, {
+          title: 'Delete Marker Tag',
+          placeHolder: 'Choose a tag to delete',
+        });
+        if (!item) return;
+        await markerService.deleteTag(el.marker.id, item.label);
+      }
+    );
   }
 
   // =========================================================
@@ -153,8 +190,16 @@ export class MarkerTreeViewProvider
     const m = element.marker;
     const label = getMarkerTitle(m);
 
+    const highlights: [number, number][] = [];
+    let total = 0;
+    m.tags?.forEach((t) => {
+      let len = 1 + t.length + 1;
+      highlights.push([total + 1, total + len - 1]);
+      total += len;
+    });
+
     return {
-      label,
+      label: { label, highlights },
       command: {
         command: 'codeExplorer.stackView.openMarker',
         arguments: [element],
