@@ -217,10 +217,16 @@ class MarkerService {
       this.stacks = data.stacks;
       this.currentStackId = data.currentStackId;
     } catch (e) {
-      output.log('Error to load data:' + String(e));
       this.markers = [];
       this.stacks = [];
       this.currentStackId = null;
+      if (e instanceof vscode.FileSystemError && e.code === 'FileNotFound') {
+        this.saveData().catch((e2) => {
+          output.log('Failed to create data file: ' + String(e2));
+        });
+      } else {
+        output.log('Error to load data:' + String(e));
+      }
     }
 
     this.loaded.resolve();

@@ -16,4 +16,4 @@ Explore codebase efficiently with adding markers into a stack and switching amon
 4. Repeat last step when you are reading the code.
 5. Click markers in the stack to switch back and forward.
 
-Code Explorer supports multiple stacks, you could switch another stack or create new one. Try exploring the icons in the top-right bar.
+Code Explorer supports multiple stacks, you could switch another stack or create a new one. Try exploring the icons in the top-right bar of panel.

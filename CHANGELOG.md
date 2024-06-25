@@ -6,6 +6,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## 0.1.10
+
+- Create data file automatically when not found
+
 ## 0.1.9
 
 - Watch data file(create/change/delete) to reload data automatically
