@@ -245,10 +245,19 @@ class MarkerService {
         context.storageUri,
         'code-explorer.json'
       );
+
+      // Group markers of same stack together
+      const sortedMarkers = [...this.markers].sort((a, b) => {
+        if (a.stackId === b.stackId) {
+          return b.createdAt - a.createdAt;
+        } else {
+          return a.stackId < b.stackId ? -1 : 1;
+        }
+      });
       const data: FileContent = {
         currentStackId: this.currentStackId,
         stacks: this.stacks,
-        markers: this.markers,
+        markers: sortedMarkers,
       };
       const enc = new TextEncoder();
       const content = enc.encode(JSON.stringify(data, null, 2));
