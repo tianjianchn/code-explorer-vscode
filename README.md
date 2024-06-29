@@ -1,23 +1,23 @@
 Code Explorer
 
-> Mark code like bookmark and more!
+> Mark code call chain like bookmark and more!
 
 Explore codebase efficiently in VSCode with adding markers into a stack and switching among them.
 
 ![](https://vsmarketplacebadges.dev/version/tianjianchn.code-explorer.png) ![](https://vsmarketplacebadges.dev/installs/tianjianchn.code-explorer.png)
 
-![](./media/example.jpeg)
+![](./media/example.jpg)
 
 ## Features
 
 - Add markers for code of files.
 - Organize markers by stacks which are more like code call chain.
-- (TODO) Indent/Unindent markers to make it more like call hierarchy.
-- Drag and drop markers order.
+- (TODO/Maybe) Indent/Unindent markers to make it more like call hierarchy.
+- Drag and drop marker and stack to re-order.
+- Set title, icon, tags for a marker.
 - Copy markers as markdown into clipboard.
 - Data is saved in workspace .vscode dir with JSON format.
-- Tag markers.
-- Give marker code an alias (title).
+- (TODO) Support multiple folder workspace.
 
 ## Usage
 
@@ -27,4 +27,4 @@ Explore codebase efficiently in VSCode with adding markers into a stack and swit
 4. Repeat last step when you are reading the code.
 5. Click markers in the stack to switch back and forward.
 
-Code Explorer supports multiple stacks, you could switch another stack or create a new one. Try exploring the icons in the top-right bar of panel.
+Right click markers and stacks to get more actions.

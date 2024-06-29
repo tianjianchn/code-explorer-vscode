@@ -6,6 +6,7 @@ import {
   getMarkerTitle,
   markerService,
 } from './markerService';
+import { untitledStack } from './stackView';
 
 export function registerCommands() {
   vscode.commands.registerCommand('codeExplorer.addMarker', async () => {
@@ -30,13 +31,13 @@ export function registerCommands() {
     markerService.addMarker({
       line: range.start.line,
       column,
-      text,
+      code: text,
       file: editor.document.fileName,
     });
   });
 
   vscode.commands.registerCommand('codeExplorer.actions', async () => {
-    const { stack } = await markerService.getCurrentStack();
+    const stack = await markerService.getActiveStack();
 
     const pickItems: (vscode.QuickPickItem & {
       id:
@@ -64,7 +65,7 @@ export function registerCommands() {
 
     const selected = await vscode.window.showQuickPick(pickItems, {
       title: 'Stack Actions of Code Explorer',
-      placeHolder: 'Current stack: ' + (stack ? stack.title : '<none>'),
+      placeHolder: 'Current stack: ' + (stack ? stack.title : untitledStack),
     });
     if (!selected) return;
 
@@ -74,19 +75,15 @@ export function registerCommands() {
       case 'selectMarkerAll':
         return vscode.commands.executeCommand('codeExplorer.selectMarkerAll');
       case 'rename':
-        return vscode.commands.executeCommand(
-          'codeExplorer.stackView.renameStack'
-        );
+        return vscode.commands.executeCommand('codeExplorer.renameStack');
       case 'delete':
         return vscode.commands.executeCommand('codeExplorer.deleteStack');
       case 'refresh':
-        return vscode.commands.executeCommand('codeExplorer.stackView.refresh');
+        return vscode.commands.executeCommand('codeExplorer.refresh');
       case 'switch':
-        return vscode.commands.executeCommand('codeExplorer.loadStack');
+        return vscode.commands.executeCommand('codeExplorer.activateStack');
       case 'copyMarkersIntoClipboard':
-        return vscode.commands.executeCommand(
-          'codeExplorer.copyMarkersIntoClipboard'
-        );
+        return vscode.commands.executeCommand('codeExplorer.copyMarkers');
       case 'openDataFile':
         return vscode.commands.executeCommand('codeExplorer.openDataFile');
       default:
@@ -95,79 +92,27 @@ export function registerCommands() {
     }
   });
 
-  vscode.commands.registerCommand('codeExplorer.loadStack', async () => {
-    const [stacks, { stack: curr }] = await Promise.all([
-      markerService.getStacks(),
-      markerService.getCurrentStack(),
-    ]);
-    const pickItems: (vscode.QuickPickItem & { id: string | null })[] =
-      stacks.map((s) => ({
-        label: (s.id === curr?.id ? '* ' : '') + s.title,
-        id: s.id,
-      }));
-    pickItems.unshift({
-      label: 'Create new stack',
-      id: null,
-      picked: false,
-    });
-
-    const selected = await vscode.window.showQuickPick(pickItems, {
-      title: 'Switch Stack of Code Explorer',
-      placeHolder: 'Current stack: ' + (curr?.title ?? '<none>'),
-      matchOnDescription: true,
-      matchOnDetail: true,
-    });
-    if (!selected) return;
-
-    if (!selected.id) {
-      await markerService.createStack();
-    } else {
-      await markerService.switchStack(selected.id);
-    }
-  });
-
-  vscode.commands.registerCommand(
-    'codeExplorer.stackView.renameStack',
-    async () => {
-      const { stack } = await markerService.getCurrentStack();
-      if (!stack) {
-        return;
-      }
-      const ans = await vscode.window.showInputBox({
-        placeHolder: stack.title,
-      });
-      if (!ans) return;
-      await markerService.renameStack(stack.id, ans);
-    }
-  );
-
-  vscode.commands.registerCommand('codeExplorer.deleteStack', async () => {
-    const { stack, markers } = await markerService.getCurrentStack();
-    if (!stack) {
-      return;
-    }
-    const ans = await vscode.window.showInformationMessage(
-      'Do you really want to delete stack: ' + stack.title + '?',
-      'Delete',
-      'Cancel'
-    );
-    if (ans === 'Delete') {
-      await markerService.deleteStack(stack.id);
-    }
+  vscode.commands.registerCommand('codeExplorer.createStack', async () => {
+    await markerService.createStack();
   });
 
   vscode.commands.registerCommand('codeExplorer.selectMarker', async () => {
-    const { stack, markers } = await markerService.getCurrentStack();
+    const stack = await markerService.getActiveStack();
+    if (!stack) return;
 
     await showMarkers(
-      'Select a marker of current stack: ' + stack?.title,
-      markers
+      'Select a marker of current stack: ' + (stack.title ?? untitledStack),
+      stack.markers
     );
   });
 
   vscode.commands.registerCommand('codeExplorer.selectMarkerAll', async () => {
-    const markers = await markerService.getAllMarkers();
-    await showMarkers('Select a marker in ALL stacks', markers);
+    const stacks = await markerService.getStacks();
+    const markers = stacks.reduce(
+      (m, s) => m.concat(s.markers),
+      [] as Marker[]
+    );
+    await showMarkers('Select a marker of ALL stacks', markers);
   });
 
   async function showMarkers(title: string, markers: Marker[]) {
@@ -196,18 +141,6 @@ export function registerCommands() {
       selectedMarker
     );
   }
-
-  vscode.commands.registerCommand(
-    'codeExplorer.copyMarkersIntoClipboard',
-    async () => {
-      const { stack, markers } = await markerService.getCurrentStack();
-      if (!stack) return;
-
-      const text = markers.map((m) => getMarkerClipboardText(m)).join('\n');
-
-      await vscode.env.clipboard.writeText(text);
-    }
-  );
 
   vscode.commands.registerCommand('codeExplorer.openDataFile', async () => {
     const file = markerService.getDataFilePath();

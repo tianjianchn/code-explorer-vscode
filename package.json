@@ -29,58 +29,40 @@
   "contributes": {
     "commands": [
       {
-        "command": "codeExplorer.addMarker",
-        "title": "Add Code Marker",
-        "category": "Code Explorer"
-      },
-      {
-        "command": "codeExplorer.selectMarker",
-        "title": "Select a Marker of Current Stack",
-        "category": "Code Explorer"
-      },
-      {
-        "command": "codeExplorer.selectMarkerAll",
-        "title": "Select a Marker of All Stacks",
-        "category": "Code Explorer"
-      },
-      {
-        "command": "codeExplorer.copyMarkersIntoClipboard",
-        "title": "Copy Markers of Current Stack",
-        "category": "Code Explorer"
-      },
-      {
-        "command": "codeExplorer.openDataFile",
-        "title": "Open Data File (Edit carefully)",
-        "category": "Code Explorer"
-      },
-      {
-        "command": "codeExplorer.actions",
-        "title": "Stack Actions",
+        "command": "codeExplorer.createStack",
+        "title": "Create Stack",
         "category": "Code Explorer",
-        "icon": "$(tools)",
+        "icon": "$(add)"
+      },
+      {
+        "command": "codeExplorer.activateStack",
+        "title": "Activate Stack",
+        "category": "Code Explorer",
+        "icon": "$(arrow-swap)",
         "enablement": "view == codeExplorer.stackView"
       },
       {
-        "command": "codeExplorer.stackView.refresh",
-        "title": "Refresh Stacks",
+        "command": "codeExplorer.renameStack",
+        "title": "Rename Stack",
         "category": "Code Explorer",
-        "icon": "$(refresh)"
+        "enablement": "view == codeExplorer.stackView"
       },
       {
-        "command": "codeExplorer.loadStack",
-        "title": "Switch Stack",
+        "command": "codeExplorer.copyMarkers",
+        "title": "Copy Markers",
         "category": "Code Explorer",
-        "icon": "$(arrow-swap)"
+        "enablement": "view == codeExplorer.stackView"
       },
       {
         "command": "codeExplorer.deleteStack",
-        "title": "Delete Current Stack",
+        "title": "Delete Stack",
         "category": "Code Explorer",
-        "icon": "$(trash)"
+        "icon": "$(trash)",
+        "enablement": "view == codeExplorer.stackView"
       },
       {
-        "command": "codeExplorer.stackView.renameStack",
-        "title": "Rename Current Stack",
+        "command": "codeExplorer.addMarker",
+        "title": "Add Code Marker",
         "category": "Code Explorer"
       },
       {
@@ -120,10 +102,21 @@
       },
       {
         "command": "codeExplorer.stackView.deleteMarker",
-        "title": "Delete Marker",
+        "title": "Delete",
         "category": "Code Explorer",
         "icon": "$(close)",
         "enablement": "view == codeExplorer.stackView"
+      },
+      {
+        "command": "codeExplorer.refresh",
+        "title": "Refresh Stacks",
+        "category": "Code Explorer",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "codeExplorer.openDataFile",
+        "title": "Open Data File (Edit carefully)",
+        "category": "Code Explorer"
       }
     ],
     "viewsContainers": {
@@ -155,17 +148,32 @@
       ],
       "view/title": [
         {
-          "command": "codeExplorer.loadStack",
-          "when": "view == codeExplorer.stackView",
-          "group": "navigation"
-        },
-        {
-          "command": "codeExplorer.actions",
+          "command": "codeExplorer.createStack",
           "when": "view == codeExplorer.stackView",
           "group": "navigation"
         }
       ],
       "view/item/context": [
+        {
+          "command": "codeExplorer.activateStack",
+          "when": "view == codeExplorer.stackView && viewItem == stack",
+          "group": "0"
+        },
+        {
+          "command": "codeExplorer.copyMarkers",
+          "when": "view == codeExplorer.stackView && viewItem == stack",
+          "group": "3"
+        },
+        {
+          "command": "codeExplorer.renameStack",
+          "when": "view == codeExplorer.stackView && viewItem == stack",
+          "group": "5"
+        },
+        {
+          "command": "codeExplorer.deleteStack",
+          "when": "view == codeExplorer.stackView && viewItem == stack",
+          "group": "9"
+        },
         {
           "command": "codeExplorer.stackView.deleteMarker",
           "when": "view == codeExplorer.stackView && viewItem == marker",
@@ -197,17 +205,7 @@
           "group": "5"
         },
         {
-          "command": "codeExplorer.copyMarkersIntoClipboard",
-          "when": "view == codeExplorer.stackView && viewItem == marker",
-          "group": "5"
-        },
-        {
           "command": "codeExplorer.stackView.deleteMarker",
-          "when": "view == codeExplorer.stackView && viewItem == marker",
-          "group": "8"
-        },
-        {
-          "command": "codeExplorer.deleteStack",
           "when": "view == codeExplorer.stackView && viewItem == marker",
           "group": "9"
         }

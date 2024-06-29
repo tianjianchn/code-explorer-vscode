@@ -19,34 +19,31 @@ export interface Marker {
   file: string;
   line: number;
   column: number;
-  text: string;
+  code: string;
   createdAt: string;
-  stackId: string;
 }
 
 export interface Stack {
   id: string;
-  title: string;
+  title?: string;
   createdAt: string;
+  isActive: boolean;
+  markers: Marker[];
 }
 
 export interface MarkerGroupWithChildren extends Stack {
   children: Marker[];
 }
 
-interface FileContent {
+interface FileData {
   '#': string;
-  markers: Marker[];
   stacks: Stack[];
-  currentStackId: string | null;
 }
 
 const WATCH_DEBOUNCE_TIME = 300; // ms
 
 class MarkerService {
-  private markers: Marker[] = [];
   private stacks: Stack[] = [];
-  private currentStackId: string | null = null;
   private loading = new Future();
 
   private isSavingData = false;
@@ -68,14 +65,11 @@ class MarkerService {
     this.watcher?.dispose();
   }
 
-  async getCurrentStack() {
+  async getActiveStack() {
     await this.loading.promise;
 
-    const markers = this.markers.filter(
-      (marker) => marker.stackId === this.currentStackId
-    );
-    const stack = this.stacks.find((s) => s.id === this.currentStackId);
-    return { stack, markers };
+    const stack = this.stacks.find((s) => s.isActive);
+    return stack;
   }
 
   async getStacks() {
@@ -83,75 +77,138 @@ class MarkerService {
     return this.stacks;
   }
 
-  async getAllMarkers() {
-    await this.loading.promise;
-    return this.markers;
+  async createStack() {
+    const stack = this.doCreateStack();
+    await this.saveData();
+    return stack;
   }
 
-  async createStack() {
+  private doCreateStack() {
     const stackId = uuid();
-    this.currentStackId = stackId;
 
-    await this.saveData();
+    // Remove newly created one
+    const firstStack = this.stacks[0];
+    if (firstStack && !firstStack.title && !firstStack.markers.length) {
+      this.stacks.splice(0, 1);
+    }
+
+    let stack = this.stacks.find((s) => s.isActive);
+    if (stack) {
+      stack.isActive = false;
+    }
+
+    stack = {
+      id: stackId,
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      markers: [],
+    };
+    this.stacks.unshift(stack);
+    return stack;
   }
 
   async renameStack(id: string, title: string) {
     const stack = this.stacks.find((s) => s.id === id);
     if (!stack) return;
     stack.title = title;
+
     await this.saveData();
   }
 
-  async deleteStack(id: string) {
-    this.markers = this.markers.filter((m) => m.stackId !== id);
-    this.stacks = this.stacks.filter((s) => s.id !== id);
-    this.currentStackId = this.stacks[0]?.id ?? -1;
-    await this.saveData();
-  }
-
-  async switchStack(stackId: string) {
-    this.currentStackId = stackId;
-    await this.saveData();
-  }
-
-  async addMarker(
-    marker: Omit<Marker, 'type' | 'createdAt' | 'id' | 'stackId'>
+  /**
+   * Put src after target
+   * @param srcId
+   * @param targetId
+   * @returns
+   */
+  async moveStack(
+    srcId: string,
+    targetId: string,
+    targetType: 'stack' | 'marker'
   ) {
-    const now = new Date();
-    const defaultStackTitle = marker.text.slice(0, 16) + ' ' + getDateStr(now);
-    if (!this.currentStackId) {
-      const stackId = uuid();
-      this.stacks.unshift({
-        id: stackId,
-        title: defaultStackTitle,
-        createdAt: now.toISOString(),
-      });
-      this.currentStackId = stackId;
+    let src = -1;
+    let dst = -1;
+
+    src = this.stacks.findIndex((s) => s.id === srcId);
+    if (src < 0) return;
+
+    if (targetType === 'stack') {
+      const index = this.stacks.findIndex((s) => s.id === targetId);
+      if (index < 0) return;
+      dst = index;
     } else {
-      const stack = this.stacks.find((s) => s.id === this.currentStackId);
-      if (!stack) {
-        this.stacks.unshift({
-          id: this.currentStackId,
-          title: defaultStackTitle,
-          createdAt: now.toISOString(),
-        });
+      for (let ii = 0; ii < this.stacks.length; ++ii) {
+        const stack = this.stacks[ii];
+        const index = stack.markers.findIndex((m) => m.id === targetId);
+        if (index >= 0) {
+          dst = ii;
+          break;
+        }
+      }
+    }
+    if (dst < 0) return;
+
+    if (src === dst) {
+      return;
+    } else {
+      const srcStack = this.stacks[src];
+      this.stacks.splice(src, 1);
+      if (dst > src) {
+        this.stacks.splice(dst, 0, srcStack);
+      } else {
+        this.stacks.splice(dst + 1, 0, srcStack);
       }
     }
 
-    const markerId = uuid();
+    await this.saveData();
+  }
 
-    this.markers.unshift({
+  /**
+   * Delete active stack may cause there is not active stack.
+   * @param id
+   */
+  async deleteStack(id: string) {
+    this.stacks = this.stacks.filter((s) => s.id !== id);
+
+    await this.saveData();
+  }
+
+  async activateStack(stackId: string) {
+    this.stacks.forEach((s) => {
+      s.isActive = s.id === stackId;
+    });
+    await this.saveData();
+  }
+
+  async addMarker(marker: Omit<Marker, 'createdAt' | 'id'>) {
+    const now = new Date();
+    let stack = this.stacks.find((s) => s.isActive);
+    if (!stack) {
+      stack = this.doCreateStack();
+    }
+    if (!stack.title)
+      stack.title = marker.code.slice(0, 16) + ' ' + getDateStr(now);
+
+    stack.markers.unshift({
       ...marker,
-      id: markerId,
-      stackId: this.currentStackId,
+      id: uuid(),
       createdAt: now.toISOString(),
     });
 
     await this.saveData();
   }
 
+  private getMarker(markerId: string) {
+    for (let ii = 0; ii < this.stacks.length; ++ii) {
+      const stack = this.stacks[ii];
+      const marker = stack.markers.find((m) => m.id === markerId);
+      if (marker) return marker;
+    }
+    return null;
+  }
+
   async setTitle(markerId: string, title: string) {
-    const marker = this.markers.find((m) => m.id === markerId);
+    const marker = this.getMarker(markerId);
     if (!marker) return;
 
     marker.title = title === '' ? undefined : title;
@@ -160,7 +217,7 @@ class MarkerService {
   }
 
   async setIcon(markerId: string, icon: string) {
-    const marker = this.markers.find((m) => m.id === markerId);
+    const marker = this.getMarker(markerId);
     if (!marker) return;
 
     marker.icon = icon === '' ? undefined : icon;
@@ -169,7 +226,7 @@ class MarkerService {
   }
 
   async addTag(markerId: string, tag: string) {
-    const marker = this.markers.find((m) => m.id === markerId);
+    const marker = this.getMarker(markerId);
     if (!marker) return;
 
     if (!marker.tags) marker.tags = [tag];
@@ -180,7 +237,7 @@ class MarkerService {
   }
 
   async deleteTag(markerId: string, tag: string) {
-    const marker = this.markers.find((m) => m.id === markerId);
+    const marker = this.getMarker(markerId);
     if (!marker) return;
 
     if (!marker.tags) return;
@@ -197,39 +254,71 @@ class MarkerService {
    * @param targetId
    * @returns
    */
-  async moveMarker(srcId: string, targetId: string) {
-    if (srcId === targetId) return;
+  async moveMarker(
+    srcId: string,
+    targetId: string,
+    targetType: 'stack' | 'marker'
+  ) {
+    let src = { stackIndex: -1, markerIndex: -1 };
+    let dst = { stackIndex: -1, markerIndex: -1 };
 
-    const srcIndex = this.markers.findIndex((m) => m.id === srcId);
-    if (srcIndex < 0) return;
-    const src = this.markers[srcIndex];
-
-    let tgtIndex = this.markers.findIndex((m) => m.id === targetId);
-    if (tgtIndex < 0) return;
-    this.markers.splice(srcIndex, 1);
-    if (srcIndex < tgtIndex) {
-      tgtIndex -= 1;
+    for (let ii = 0; ii < this.stacks.length; ++ii) {
+      const stack = this.stacks[ii];
+      const index = stack.markers.findIndex((m) => m.id === srcId);
+      if (index >= 0) {
+        src.stackIndex = ii;
+        src.markerIndex = index;
+        break;
+      }
     }
-    this.markers.splice(tgtIndex + 1, 0, src);
+    if (src.stackIndex < 0 || src.markerIndex < 0) return;
+
+    if (targetType === 'stack') {
+      const stackIndex = this.stacks.findIndex((s) => s.id === targetId);
+      if (stackIndex < 0) return;
+      dst.stackIndex = stackIndex;
+    } else {
+      for (let ii = 0; ii < this.stacks.length; ++ii) {
+        const stack = this.stacks[ii];
+        const index = stack.markers.findIndex((m) => m.id === targetId);
+        if (index >= 0) {
+          dst.stackIndex = ii;
+          dst.markerIndex = index;
+          break;
+        }
+      }
+    }
+    if (dst.stackIndex < 0) return;
+
+    const stack = this.stacks[src.stackIndex];
+    const srcMarker = stack.markers[src.markerIndex];
+    stack.markers.splice(src.markerIndex, 1);
+
+    if (src.stackIndex == dst.stackIndex) {
+      if (dst.markerIndex > src.markerIndex) {
+        stack.markers.splice(dst.markerIndex, 0, srcMarker);
+      } else {
+        stack.markers.splice(dst.markerIndex + 1, 0, srcMarker);
+      }
+    } else {
+      const dstStack = this.stacks[dst.stackIndex];
+      dstStack.markers.splice(dst.markerIndex + 1, 0, srcMarker);
+    }
+
     await this.saveData();
   }
 
   async deleteMarker(markerId: string) {
-    const index = this.markers.findIndex((m) => m.id === markerId);
-    if (index < 0) return;
-    const marker = this.markers[index];
-    this.markers.splice(index, 1);
+    for (let ii = 0; ii < this.stacks.length; ++ii) {
+      const stack = this.stacks[ii];
+      const index = stack.markers.findIndex((m) => m.id === markerId);
+      if (index >= 0) {
+        stack.markers.splice(index, 1);
 
-    // Clear empty stacks
-    const usedStackIds: Record<string, true> = {};
-    this.markers.forEach((m) => {
-      usedStackIds[m.stackId] = true;
-    });
-    this.stacks = this.stacks.filter((s) => usedStackIds[s.id]);
-    if (this.currentStackId && !usedStackIds[this.currentStackId])
-      this.currentStackId = null;
-
-    await this.saveData();
+        await this.saveData();
+        return;
+      }
+    }
   }
 
   private _oldGetDataFilePath() {
@@ -280,35 +369,55 @@ class MarkerService {
       const fileData = await vscode.workspace.fs.readFile(file);
       const dec = new TextDecoder('utf-8');
       const content = dec.decode(fileData);
-      const data = JSON.parse(content) as FileContent;
+      const data = JSON.parse(content);
 
       // Normalize data from old versions
-      data.markers.forEach((m) => {
-        m.id = m.id + '';
-        m.stackId = m.stackId + '';
-        m.createdAt = new Date(m.createdAt).toISOString();
-      });
-      data.stacks.forEach((s) => {
-        s.id = s.id + '';
-        s.createdAt = new Date(s.createdAt).toISOString();
-      });
-      data.currentStackId = data.currentStackId + '';
+      if (data.markers) {
+        const oldData = data as {
+          currentStackId: string;
+          stacks: Stack[];
+          markers: (Marker & { stackId: string })[];
+        };
+        oldData.markers.forEach((m) => {
+          m.id = m.id + '';
+          m.stackId = m.stackId + '';
+          m.code = (m as any).text;
+          m.createdAt = new Date(m.createdAt).toISOString();
+        });
+        oldData.stacks.forEach((s) => {
+          s.id = s.id + '';
+          s.createdAt = new Date(s.createdAt).toISOString();
+        });
+        oldData.currentStackId = oldData.currentStackId + '';
 
-      this.markers = data.markers;
-      this.stacks = data.stacks;
-      this.currentStackId = data.currentStackId;
+        oldData.stacks.forEach((s) => {
+          s.isActive = s.id === oldData.currentStackId;
+          s.markers = oldData.markers.filter((m) => m.stackId === s.id);
+        });
+      }
+
+      const stacks = (data.stacks ?? []) as Stack[];
+      // const activeIndex = stacks.findIndex((s) => s.isActive);
+      // if (activeIndex > 0) {
+      //   const activeStack = stacks[activeIndex];
+      //   stacks.splice(activeIndex, 1);
+      //   stacks.unshift(activeStack);
+      // }
+      this.stacks = stacks;
     } catch (e) {
-      this.markers = [];
       this.stacks = [];
-      this.currentStackId = null;
-      if (e instanceof vscode.FileSystemError && e.code === 'FileNotFound') {
+      if (
+        e instanceof vscode.FileSystemError &&
+        e.code === 'FileNotFound' &&
+        file === this.getDataFilePath()
+      ) {
         // Copy from old version
         const oldFile = this._oldGetDataFilePath();
         if (oldFile) {
           output.log('Try to load from old data file: ' + oldFile.toString());
           await this.doLoad(oldFile);
           await this.saveData();
-          if (this.markers.length) {
+          if (this.stacks.length) {
             try {
               await vscode.workspace.fs.delete(oldFile);
             } catch (e2) {}
@@ -327,45 +436,34 @@ class MarkerService {
 
       this.isSavingData = true;
 
-      const markers = this.markers.map((m) => {
-        const r: Marker = {
-          title: m.title,
-          text: m.text,
-          tags: m.tags,
-          file: m.file,
-          line: m.line,
-          column: m.column,
-          icon: m.icon,
-          createdAt: m.createdAt,
-          id: m.id,
-          stackId: m.stackId,
+      const stacks = this.stacks.map((s) => {
+        const markers = s.markers.map((m) => {
+          const r: Marker = {
+            title: m.title,
+            code: m.code,
+            tags: m.tags,
+            file: m.file,
+            line: m.line,
+            column: m.column,
+            icon: m.icon,
+            createdAt: m.createdAt,
+            id: m.id,
+          };
+          return r;
+        });
+        const r: Stack = {
+          title: s.title,
+          isActive: s.isActive,
+          createdAt: s.createdAt,
+          id: s.id,
+          markers,
         };
         return r;
       });
 
-      // Group markers of same stack together
-      const markerIndexMap: Record<string, number> = markers.reduce(
-        (obj, it, ind) => Object.assign(obj, { [it.id]: ind }),
-        {}
-      );
-      const sortedMarkers = markers.sort((a, b) => {
-        if (a.stackId === b.stackId) {
-          return markerIndexMap[a.id] - markerIndexMap[b.id];
-        } else {
-          return a.stackId < b.stackId ? -1 : 1;
-        }
-      });
-
-      const stacks = this.stacks.map((s) => {
-        const r: Stack = { title: s.title, createdAt: s.createdAt, id: s.id };
-        return r;
-      });
-
-      const data: FileContent = {
+      const data: FileData = {
         '#': 'NOT recommend to edit manually. Write carefully! Generated by tianjianchn.code-explorer vscode extension.',
-        currentStackId: this.currentStackId,
         stacks: stacks,
-        markers: sortedMarkers,
       };
       const enc = new TextEncoder();
       const content = enc.encode(JSON.stringify(data, null, 2));
@@ -426,7 +524,7 @@ class MarkerService {
 export const markerService = new MarkerService();
 
 export function getMarkerTitle(marker: Marker) {
-  const title = marker.title ?? marker.text;
+  const title = marker.title ?? marker.code;
   if (marker.tags?.length) {
     const tags = marker.tags.map((t) => '[' + t + ']').join('');
     return tags + ' ' + title;
@@ -441,11 +539,13 @@ export function getMarkerDesc(marker: Marker) {
 }
 
 export function getMarkerClipboardText(marker: Marker) {
-  const tags = marker.tags?.map((t) => '[' + t + ']').join('') ?? '';
+  let tags = marker.tags?.map((t) => '[' + t + ']').join('') ?? '';
+  if (tags.length) tags += ' ';
+
   const loc = `${getRelativeFilePath(marker.file)}:${marker.line + 1}:${
     marker.column + 1
   }`;
   const title = marker.title ? ' # ' + marker.title : '';
 
-  return `- ${tags}${loc} ${marker.text}${title}`;
+  return `- ${tags}${loc} ${marker.code}${title}`;
 }
