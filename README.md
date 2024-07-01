@@ -4,7 +4,9 @@ Code Explorer
 
 Explore codebase efficiently in VSCode with adding markers into a stack and switching among them.
 
-![](https://vsmarketplacebadges.dev/version/tianjianchn.code-explorer.png) ![](https://vsmarketplacebadges.dev/installs/tianjianchn.code-explorer.png)
+[![Version](https://img.shields.io/visual-studio-marketplace/v/tianjianchn.code-explorer.svg?label=version&color=)](https://marketplace.visualstudio.com/items?itemName=tianjianchn.code-explorer)
+[![Install Count](https://img.shields.io/visual-studio-marketplace/i/tianjianchn.code-explorer.svg?color=)](https://marketplace.visualstudio.com/items?itemName=tianjianchn.code-explorer)
+[![Download Count](https://img.shields.io/visual-studio-marketplace/d/tianjianchn.code-explorer.svg?color=)](https://marketplace.visualstudio.com/items?itemName=tianjianchn.code-explorer)
 
 ![](./media/example.jpg)
 
