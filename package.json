@@ -33,6 +33,13 @@
   "contributes": {
     "commands": [
       {
+        "command": "codeExplorer.chooseWorkspaceFolder",
+        "title": "Choose Workspace Folder",
+        "category": "Code Explorer",
+        "icon": "$(folder)",
+        "enablement": "workspaceFolderCount > 1"
+      },
+      {
         "command": "codeExplorer.createStack",
         "title": "Create Stack",
         "category": "Code Explorer",
@@ -154,6 +161,11 @@
         {
           "command": "codeExplorer.createStack",
           "when": "view == codeExplorer.stackView",
+          "group": "navigation"
+        },
+        {
+          "command": "codeExplorer.chooseWorkspaceFolder",
+          "when": "view == codeExplorer.stackView && workspaceFolderCount > 1",
           "group": "navigation"
         }
       ],

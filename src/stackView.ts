@@ -14,6 +14,7 @@ import { vscodeIcons } from './icons';
 interface LabelElement {
   type: 'label';
   label: string;
+  chooseFolder?: boolean;
 }
 
 interface MarkerElement {
@@ -58,6 +59,32 @@ export class MarkerTreeViewProvider
       this._provider.refresh();
     });
     markerService.onDataUpdated(() => this._provider.refresh());
+
+    vscode.commands.registerCommand(
+      'codeExplorer.chooseWorkspaceFolder',
+      async () => {
+        const folders = vscode.workspace.workspaceFolders;
+        if (!folders?.length) return;
+        if (folders.length === 1) {
+          markerService.setWorkspaceFolder(folders[0].uri);
+        } else {
+          const pickItems: (vscode.QuickPickItem & { uri: vscode.Uri })[] =
+            folders.map((f) => ({
+              label: f.name,
+              uri: f.uri,
+            }));
+
+          const selected = await vscode.window.showQuickPick(pickItems, {
+            title: 'Choose the workspace folder for Code Explorer',
+            matchOnDescription: true,
+            matchOnDetail: true,
+          });
+          if (!selected) return;
+
+          await markerService.setWorkspaceFolder(selected.uri);
+        }
+      }
+    );
 
     vscode.commands.registerCommand(
       'codeExplorer.activateStack',
@@ -300,7 +327,6 @@ export class MarkerTreeViewProvider
   // =========================================================
   // Instance properties and methods below
   // =========================================================
-  private _layout: 'ActiveStackOnly' | 'AllStacks' = 'AllStacks';
   private _onDidChangeTreeData: vscode.EventEmitter<TreeElement | void> =
     new vscode.EventEmitter<TreeElement | void>();
   readonly onDidChangeTreeData: vscode.Event<TreeElement | void> =
@@ -314,64 +340,83 @@ export class MarkerTreeViewProvider
 
   async getChildren(element?: TreeElement): Promise<TreeElement[]> {
     if (!element) {
-      if (this._layout === 'ActiveStackOnly') {
-        const stack = await markerService.getActiveStack();
-
-        if (!stack || !stack.markers.length) {
+      const folders = vscode.workspace.workspaceFolders;
+      if (!folders?.length) {
+        return [
+          {
+            type: 'label',
+            label: 'No workspace opened',
+          },
+        ];
+      } else if (folders.length > 1) {
+        const selectedFolder = markerService.getWorkspaceFolder();
+        if (!selectedFolder) {
           return [
             {
               type: 'label',
-              label: 'No markers',
+              label: 'Choose a workspace folder',
+              chooseFolder: true,
             },
           ];
+        } else {
+          await markerService.setWorkspaceFolder(selectedFolder);
         }
-
-        return stack.markers.map((m) => ({ type: 'marker', marker: m }));
-      } else if (this._layout === 'AllStacks') {
-        const stacks = await markerService.getStacks();
-        if (stacks.length)
-          return stacks.map((s) => ({ type: 'stack', stack: s }));
-        else
-          return [
-            {
-              type: 'label',
-              label: 'No stacks',
-            },
-          ];
       } else {
-        const exhaustedLayout: never = this._layout;
-        throw new Error('Unknown layout: ' + exhaustedLayout);
+        await markerService.setWorkspaceFolder(folders[0].uri);
       }
+
+      const stacks = await markerService.getStacks();
+      if (stacks.length)
+        return stacks.map((s) => ({ type: 'stack', stack: s }));
+      else
+        return [
+          {
+            type: 'label',
+            label: 'No stacks',
+          },
+        ];
+    }
+
+    const type = element.type;
+    if (type === 'label') {
+      return [];
+    } else if (type === 'stack') {
+      const markers = element.stack.markers;
+      if (!markers.length) {
+        return [
+          {
+            type: 'label',
+            label: 'No markers',
+          },
+        ];
+      }
+      return markers.map((m) => ({
+        type: 'marker',
+        marker: m,
+      }));
+    } else if (type === 'marker') {
+      return [];
     } else {
-      const type = element.type;
-      if (type === 'label') {
-        return [];
-      } else if (type === 'stack') {
-        const markers = element.stack.markers;
-        if (!markers.length) {
-          return [
-            {
-              type: 'label',
-              label: 'No markers',
-            },
-          ];
-        }
-        return markers.map((m) => ({
-          type: 'marker',
-          marker: m,
-        }));
-      } else if (type === 'marker') {
-        return [];
-      } else {
-        const exhaustedType: never = type;
-        throw new Error('Unknown element: ' + exhaustedType);
-      }
+      const exhaustedType: never = type;
+      throw new Error('Unknown element: ' + exhaustedType);
     }
   }
 
   async getTreeItem(element: TreeElement): Promise<vscode.TreeItem> {
     const type = element.type;
     if (type === 'label') {
+      if (element.chooseFolder) {
+        return {
+          label: {
+            label: 'Click to choose a workspace folder to load data',
+            highlights: [[0, 5]],
+          },
+          command: {
+            command: 'codeExplorer.chooseWorkspaceFolder',
+            title: 'Choose workspace folder',
+          },
+        };
+      }
       return {
         label: element.label,
         contextValue: '',

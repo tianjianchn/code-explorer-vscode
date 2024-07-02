@@ -43,6 +43,7 @@ interface FileData {
 const WATCH_DEBOUNCE_TIME = 300; // ms
 
 class MarkerService {
+  private folder: vscode.Uri | null = null;
   private stacks: Stack[] = [];
   private loading = new Future();
 
@@ -53,16 +54,24 @@ class MarkerService {
     new vscode.EventEmitter<void>();
   readonly onDataUpdated: vscode.Event<void> = this._onDataUpdatedEmitter.event;
 
-  constructor() {
-    extensionEnv.onActivated(async () => {
-      this.watcher = this.watchDataFile();
-      await this.loadData();
-    });
-  }
-
   dispose() {
     this._onDataUpdatedEmitter.dispose();
     this.watcher?.dispose();
+    this.watcher = undefined;
+  }
+
+  async setWorkspaceFolder(uri: vscode.Uri) {
+    if (this.folder?.toString() === uri.toString()) return;
+    this.folder = uri;
+
+    if (this.watcher) this.watcher.dispose();
+    this.watcher = this.watchDataFile();
+    await this.loadData();
+    this._onDataUpdatedEmitter.fire();
+  }
+
+  getWorkspaceFolder() {
+    return this.folder;
   }
 
   async getActiveStack() {
@@ -333,16 +342,10 @@ class MarkerService {
   }
 
   getDataFilePath() {
-    const context = extensionEnv.getExtensionContext();
-    if (!context.storageUri) {
-      // No workspace opened
-      return;
-    }
-    const folders = vscode.workspace.workspaceFolders;
-    if (!folders) return;
+    if (!this.folder) return;
 
     const file = vscode.Uri.joinPath(
-      folders[0].uri,
+      this.folder,
       '.vscode',
       '.code-explorer.json'
     );
@@ -356,8 +359,9 @@ class MarkerService {
     const file = this.getDataFilePath();
     if (!file) return;
 
-    if (!reload) output.log('Loading data from ' + file.toString());
+    if (!reload) output.log('Start to load data');
     await this.doLoad(file);
+    if (!reload) output.log('End to load data');
 
     this.loading.resolve();
   }
@@ -424,7 +428,7 @@ class MarkerService {
           }
         }
       } else {
-        output.log('Error to load data:' + String(e));
+        output.log('Error to load data: ' + String(e));
       }
     }
   }
@@ -485,6 +489,8 @@ class MarkerService {
 
     const file = this.getDataFilePath();
     if (!file) return;
+
+    output.log('Watching data file ' + file.toString());
 
     const watcher = vscode.workspace.createFileSystemWatcher(
       new vscode.RelativePattern(
