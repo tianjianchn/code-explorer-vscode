@@ -129,7 +129,7 @@ export class MarkerTreeViewProvider
         }
 
         await markerService.activateStack(stack.id);
-        if (el) this._view.reveal(el, { focus: true, expand: 1 });
+        if (el) this._view.reveal(el, { focus: true, expand: 1 }); // Need implement getParent() in the provider
       }
     );
 
@@ -172,7 +172,7 @@ export class MarkerTreeViewProvider
         await vscode.env.clipboard.writeText(text);
       }
     );
-vscode.commands.registerCommand(
+    vscode.commands.registerCommand(
       'codeExplorer.copyMarkersReversed',
       async (el?: TreeElement) => {
         let stack: Stack | undefined = undefined;
@@ -356,6 +356,19 @@ vscode.commands.registerCommand(
 
   async refresh() {
     this._onDidChangeTreeData.fire();
+  }
+
+  async getParent(
+    element: TreeElement
+  ): Promise<TreeElement | null | undefined> {
+    if (element.type === 'stack' || element.type === 'label') return null;
+    const marker = element.marker;
+    const stacks = await markerService.getStacks();
+    const stack = stacks.find((s) => s.markers.some((m) => m === marker));
+    if (!stack) return null;
+    const stackElArr = await this.getChildren();
+    const par = stackElArr.find((e) => e.type === 'stack' && e.stack === stack);
+    return par;
   }
 
   async getChildren(element?: TreeElement): Promise<TreeElement[]> {
