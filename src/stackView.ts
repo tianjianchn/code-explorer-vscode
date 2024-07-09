@@ -172,6 +172,26 @@ export class MarkerTreeViewProvider
         await vscode.env.clipboard.writeText(text);
       }
     );
+vscode.commands.registerCommand(
+      'codeExplorer.copyMarkersReversed',
+      async (el?: TreeElement) => {
+        let stack: Stack | undefined = undefined;
+        if (!el) {
+          stack = await markerService.getActiveStack();
+        } else if (el.type === 'stack') {
+          stack = el.stack;
+        }
+        if (!stack) return;
+
+        const text = stack.markers
+          .slice()
+          .reverse()
+          .map((m) => getMarkerClipboardText(m))
+          .join('\n');
+
+        await vscode.env.clipboard.writeText(text);
+      }
+    );
 
     vscode.commands.registerCommand(
       'codeExplorer.deleteStack',

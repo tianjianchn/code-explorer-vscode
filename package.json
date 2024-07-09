@@ -65,6 +65,12 @@
         "enablement": "view == codeExplorer.stackView"
       },
       {
+        "command": "codeExplorer.copyMarkersReversed",
+        "title": "Copy Markers (Reversed)",
+        "category": "Code Explorer",
+        "enablement": "view == codeExplorer.stackView"
+      },
+      {
         "command": "codeExplorer.deleteStack",
         "title": "Delete Stack",
         "category": "Code Explorer",
@@ -177,6 +183,11 @@
         },
         {
           "command": "codeExplorer.copyMarkers",
+          "when": "view == codeExplorer.stackView && viewItem == stack",
+          "group": "3"
+        },
+        {
+          "command": "codeExplorer.copyMarkersReversed",
           "when": "view == codeExplorer.stackView && viewItem == stack",
           "group": "3"
         },
