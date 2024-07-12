@@ -119,6 +119,18 @@
         "category": "Code Explorer"
       },
       {
+        "command": "codeExplorer.stackView.indentMarker",
+        "title": "Indent",
+        "category": "Code Explorer",
+        "enablement": "view == codeExplorer.stackView"
+      },
+      {
+        "command": "codeExplorer.stackView.unindentMarker",
+        "title": "Unindent",
+        "category": "Code Explorer",
+        "enablement": "view == codeExplorer.stackView"
+      },
+      {
         "command": "codeExplorer.stackView.copyMarker",
         "title": "Copy",
         "category": "Code Explorer",
@@ -219,24 +231,34 @@
           "group": "inline"
         },
         {
-          "command": "codeExplorer.stackView.setMarkerTitle",
+          "command": "codeExplorer.stackView.indentMarker",
           "when": "view == codeExplorer.stackView && viewItem == marker",
           "group": "0"
+        },
+        {
+          "command": "codeExplorer.stackView.unindentMarker",
+          "when": "view == codeExplorer.stackView && viewItem == marker",
+          "group": "0"
+        },
+        {
+          "command": "codeExplorer.stackView.setMarkerTitle",
+          "when": "view == codeExplorer.stackView && viewItem == marker",
+          "group": "3"
         },
         {
           "command": "codeExplorer.stackView.setMarkerIcon",
           "when": "view == codeExplorer.stackView && viewItem == marker",
-          "group": "0"
+          "group": "3"
         },
         {
           "command": "codeExplorer.stackView.addTag",
           "when": "view == codeExplorer.stackView && viewItem == marker",
-          "group": "1"
+          "group": "4"
         },
         {
           "command": "codeExplorer.stackView.deleteTag",
           "when": "view == codeExplorer.stackView && viewItem == marker",
-          "group": "1"
+          "group": "4"
         },
         {
           "command": "codeExplorer.stackView.copyMarker",

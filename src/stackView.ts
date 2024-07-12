@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 import {
   Marker,
   Stack,
-  getMarkerClipboardText,
   getMarkerDesc,
   getMarkerTitle,
   markerService,
@@ -143,6 +142,18 @@ export class MarkerTreeViewProvider
       }
     );
 
+    function getMarkerClipboardText(marker: Marker) {
+      let tags = marker.tags?.map((t) => '[' + t + ']').join('') ?? '';
+      if (tags.length) tags += ' ';
+
+      const loc = `${getRelativeFilePath(marker.file)}:${marker.line + 1}:${
+        marker.column + 1
+      }`;
+      const title = marker.title ? ' # ' + marker.title : '';
+      const indent = '  '.repeat(marker.indent ?? 0);
+
+      return `${indent}- ${tags}${loc} ${marker.code}${title}`;
+    }
     vscode.commands.registerCommand(
       'codeExplorer.copyMarkers',
       async (el?: TreeElement) => {
@@ -239,6 +250,24 @@ export class MarkerTreeViewProvider
             selection,
           } as vscode.TextDocumentShowOptions
         );
+      }
+    );
+
+    vscode.commands.registerCommand(
+      'codeExplorer.stackView.indentMarker',
+      async (el?: TreeElement) => {
+        if (!el || el.type !== 'marker') return;
+
+        await markerService.indentMarker(el.marker.id);
+      }
+    );
+
+    vscode.commands.registerCommand(
+      'codeExplorer.stackView.unindentMarker',
+      async (el?: TreeElement) => {
+        if (!el || el.type !== 'marker') return;
+
+        await markerService.unindentMarker(el.marker.id);
       }
     );
 
@@ -471,14 +500,19 @@ export class MarkerTreeViewProvider
       };
     } else if (type === 'marker') {
       const m = element.marker;
-      const label = getMarkerTitle(m);
+      let label = getMarkerTitle(m);
+      let indent = '';
+      if (m.indent && m.indent > 0) {
+        indent = '    '.repeat(m.indent);
+        label = indent + label;
+      }
 
       const highlights: [number, number][] = [];
-      let total = 0;
+      let last = indent.length;
       m.tags?.forEach((t) => {
         let len = 1 + t.length + 1;
-        highlights.push([total + 1, total + len - 1]);
-        total += len;
+        highlights.push([last + 1, last + len - 1]);
+        last += len;
       });
 
       let tooltip: string | vscode.MarkdownString =

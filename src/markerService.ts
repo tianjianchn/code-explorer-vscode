@@ -20,6 +20,7 @@ export interface Marker {
   line: number;
   column: number;
   code: string;
+  indent?: number;
   createdAt: string;
 }
 
@@ -265,6 +266,25 @@ class MarkerService {
     await this.saveData();
   }
 
+  async indentMarker(markerId: string) {
+    const marker = this.getMarker(markerId);
+    if (!marker) return;
+
+    marker.indent = (marker.indent ?? 0) + 1;
+
+    await this.saveData();
+  }
+
+  async unindentMarker(markerId: string) {
+    const marker = this.getMarker(markerId);
+    if (!marker) return;
+
+    marker.indent = (marker.indent ?? 0) - 1;
+    if (marker.indent <= 0) delete marker.indent;
+
+    await this.saveData();
+  }
+
   /**
    * Put src marker after target marker
    * @param srcId
@@ -458,6 +478,7 @@ class MarkerService {
             line: m.line,
             column: m.column,
             icon: m.icon,
+            indent: m.indent,
             createdAt: m.createdAt,
             id: m.id,
           };
@@ -538,11 +559,12 @@ class MarkerService {
 export const markerService = new MarkerService();
 
 export function getMarkerTitle(marker: Marker) {
-  const title = marker.title ?? marker.code;
+  let title = marker.title ?? marker.code;
   if (marker.tags?.length) {
     const tags = marker.tags.map((t) => '[' + t + ']').join('');
-    return tags + ' ' + title;
+    title = tags + ' ' + title;
   }
+
   return title;
 }
 
@@ -550,16 +572,4 @@ export function getMarkerDesc(marker: Marker) {
   return `${getRelativeFilePath(marker.file)}:${marker.line + 1}:${
     marker.column + 1
   }`;
-}
-
-export function getMarkerClipboardText(marker: Marker) {
-  let tags = marker.tags?.map((t) => '[' + t + ']').join('') ?? '';
-  if (tags.length) tags += ' ';
-
-  const loc = `${getRelativeFilePath(marker.file)}:${marker.line + 1}:${
-    marker.column + 1
-  }`;
-  const title = marker.title ? ' # ' + marker.title : '';
-
-  return `- ${tags}${loc} ${marker.code}${title}`;
 }

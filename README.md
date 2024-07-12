@@ -14,13 +14,13 @@ Explore codebase efficiently in VSCode with adding markers into a stack and swit
 
 - Add markers for code of files.
 - Organize markers by stacks which are more like code call chain.
+- Indent/Unindent marker to make it more like call hierarchy.
 - Drag and drop markers and stacks to re-order them.
 - Set title, icon, tags for a marker.
 - Copy markers as markdown into clipboard.
 - (TODO) Add gutter for the line of marker
 - Data is saved in workspace .vscode dir with JSON format.
 - Support multiple folder workspace.
-- (TODO/Maybe) Indent/Unindent markers to make it more like call hierarchy.
 
 ## Usage
 
