@@ -129,6 +129,21 @@ export class MarkerTreeViewProvider
     );
 
     vscode.commands.registerCommand(
+      'codeExplorer.reverseMarkers',
+      async (el?: TreeElement) => {
+        let stack: Stack | undefined = undefined;
+        if (!el) {
+          stack = await markerService.getActiveStack();
+        } else if (el.type === 'stack') {
+          stack = el.stack;
+        }
+        if (!stack) return;
+
+        markerService.reverseMarkers(stack.id);
+      }
+    );
+
+    vscode.commands.registerCommand(
       'codeExplorer.copyMarkers',
       async (el?: TreeElement) => {
         let stack: Stack | undefined = undefined;
@@ -146,6 +161,7 @@ export class MarkerTreeViewProvider
         await vscode.env.clipboard.writeText(text);
       }
     );
+
     vscode.commands.registerCommand(
       'codeExplorer.copyMarkersReversed',
       async (el?: TreeElement) => {

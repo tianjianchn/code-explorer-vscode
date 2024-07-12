@@ -189,6 +189,14 @@ class MarkerService {
     await this.saveData();
   }
 
+  async reverseMarkers(stackId: string) {
+    const stack = this.stacks.find((s) => s.id === stackId);
+    if (!stack) return;
+
+    stack.markers.reverse();
+    await this.saveData();
+  }
+
   async addMarker(marker: Omit<Marker, 'createdAt' | 'id'>) {
     const now = new Date();
     let stack = this.stacks.find((s) => s.isActive);

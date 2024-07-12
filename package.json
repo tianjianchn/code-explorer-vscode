@@ -60,6 +60,12 @@
         "enablement": "view == codeExplorer.stackView"
       },
       {
+        "command": "codeExplorer.reverseMarkers",
+        "title": "Reverse Markers",
+        "category": "Code Explorer",
+        "enablement": "view == codeExplorer.stackView"
+      },
+      {
         "command": "codeExplorer.copyMarkers",
         "title": "Copy Markers",
         "category": "Code Explorer",
@@ -181,6 +187,11 @@
           "command": "codeExplorer.activateStack",
           "when": "view == codeExplorer.stackView && viewItem == stack",
           "group": "0"
+        },
+        {
+          "command": "codeExplorer.reverseMarkers",
+          "when": "view == codeExplorer.stackView && viewItem == stack",
+          "group": "2"
         },
         {
           "command": "codeExplorer.copyMarkers",
