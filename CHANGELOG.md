@@ -7,6 +7,9 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ## 0.3.0
 
 - Add marker at the end of stack, not at the head
+- Add Reverse Markers command
+- Add indent/unindent for markers
+- Show gutter icon decoration for marker line
 
 ## 0.2.2
 
