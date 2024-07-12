@@ -1,7 +1,7 @@
 {
   "name": "code-explorer",
   "displayName": "Code Explorer",
-  "description": "Explore code efficiently with a stack",
+  "description": "Mark code call chain into a stack and switching among them.",
   "version": "0.2.2",
   "license": "MIT",
   "repository": {
@@ -23,6 +23,7 @@
     "Code Stack",
     "Code Chain",
     "Call Chain",
+    "Call Hierarchy",
     "Function Chain",
     "Read Code",
     "Code Tour"

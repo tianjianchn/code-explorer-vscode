@@ -36,6 +36,32 @@ export function registerCommands() {
     });
   });
 
+  vscode.commands.registerCommand(
+    'codeExplorer.chooseWorkspaceFolder',
+    async () => {
+      const folders = vscode.workspace.workspaceFolders;
+      if (!folders?.length) return;
+      if (folders.length === 1) {
+        markerService.setWorkspaceFolder(folders[0].uri);
+      } else {
+        const pickItems: (vscode.QuickPickItem & { uri: vscode.Uri })[] =
+          folders.map((f) => ({
+            label: f.name,
+            uri: f.uri,
+          }));
+
+        const selected = await vscode.window.showQuickPick(pickItems, {
+          title: 'Choose the workspace folder for Code Explorer',
+          matchOnDescription: true,
+          matchOnDetail: true,
+        });
+        if (!selected) return;
+
+        await markerService.setWorkspaceFolder(selected.uri);
+      }
+    }
+  );
+
   vscode.commands.registerCommand('codeExplorer.actions', async () => {
     const stack = await markerService.getActiveStack();
 

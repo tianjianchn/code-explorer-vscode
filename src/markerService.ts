@@ -198,7 +198,7 @@ class MarkerService {
     if (!stack.title)
       stack.title = marker.code.slice(0, 16) + ' ' + getDateStr(now);
 
-    stack.markers.unshift({
+    stack.markers.push({
       ...marker,
       id: uuid(),
       createdAt: now.toISOString(),
