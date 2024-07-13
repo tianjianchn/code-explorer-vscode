@@ -10,8 +10,8 @@ export function padStart(v: number | string, len: number, filler?: string) {
   return (v + '').padStart(len, filler);
 }
 
-export function getDateStr(d: Date | number) {
-  if (typeof d === 'number') d = new Date(d);
+export function getDateStr(d: Date | number | string) {
+  if (typeof d === 'number' || typeof d === 'string') d = new Date(d);
   return (
     d.getFullYear() +
     '-' +

@@ -7,34 +7,7 @@ import {
 } from './markerService';
 import { untitledStack } from './stackView';
 
-export function registerCommands() {
-  vscode.commands.registerCommand('codeExplorer.addMarker', async () => {
-    const editor = vscode.window.activeTextEditor;
-    if (!editor) return;
-
-    let range: vscode.Range;
-    let column = 0;
-    if (!editor.selection.isEmpty) {
-      range = editor.selection;
-      column = range.start.character;
-    } else {
-      range = editor.document.lineAt(editor.selection.active.line).range;
-      column = editor.selection.start.character;
-    }
-
-    let text = editor.document.getText(range);
-    if (!text) return;
-    text = text.trim();
-    if (!text) return;
-
-    markerService.addMarker({
-      line: range.start.line,
-      column,
-      code: text,
-      file: editor.document.fileName,
-    });
-  });
-
+export function registerGlobalCommands() {
   vscode.commands.registerCommand(
     'codeExplorer.chooseWorkspaceFolder',
     async () => {
@@ -60,6 +33,97 @@ export function registerCommands() {
       }
     }
   );
+
+  vscode.commands.registerCommand(
+    'codeExplorer.addMarker',
+    async (p?: EditorLineNumberContextParams) => {
+      const editor = vscode.window.activeTextEditor;
+      if (!editor) return;
+
+      let range: vscode.Range;
+      let column = 0;
+        if (!editor.selection.isEmpty) {
+          range = editor.selection;
+          column = range.start.character;
+        } else {
+          range = editor.document.lineAt(editor.selection.active.line).range;
+          column = editor.selection.start.character;
+        }
+
+      let text = editor.document.getText(range);
+      if (!text) return;
+      text = text.trim();
+      if (!text) return;
+
+      markerService.addMarker({
+        line: range.start.line,
+        column,
+        code: text,
+        file: editor.document.fileName,
+      });
+    }
+  );
+
+  vscode.commands.registerCommand('codeExplorer.createStack', async () => {
+    await markerService.createStack();
+  });
+
+  vscode.commands.registerCommand('codeExplorer.openDataFile', async () => {
+    const file = markerService.getDataFilePath();
+    if (!file) {
+      vscode.window.showWarningMessage(
+        'No folder is opened in this VSCode window'
+      );
+      return;
+    }
+    await vscode.commands.executeCommand('vscode.open', file);
+  });
+
+  vscode.commands.registerCommand('codeExplorer.selectMarker', async () => {
+    const stack = await markerService.getActiveStack();
+    if (!stack) return;
+
+    await showMarkers(
+      'Select a marker of current stack: ' + (stack.title ?? untitledStack),
+      stack.markers
+    );
+  });
+
+  vscode.commands.registerCommand('codeExplorer.selectMarkerAll', async () => {
+    const stacks = await markerService.getStacks();
+    const markers = stacks.reduce(
+      (m, s) => m.concat(s.markers),
+      [] as Marker[]
+    );
+    await showMarkers('Select a marker of ALL stacks', markers);
+  });
+
+  async function showMarkers(title: string, markers: Marker[]) {
+    if (!markers.length) {
+      await vscode.window.showQuickPick([{ label: 'No markers' }]);
+      return;
+    }
+
+    const pickItems: (vscode.QuickPickItem & { marker: Marker })[] =
+      markers.map((m) => ({
+        label: getMarkerTitle(m),
+        description: getMarkerDesc(m),
+        marker: m,
+      }));
+
+    const selected = await vscode.window.showQuickPick(pickItems, {
+      title,
+      matchOnDescription: true,
+      matchOnDetail: true,
+    });
+    if (!selected) return;
+
+    const selectedMarker = selected.marker;
+    await vscode.commands.executeCommand(
+      'codeExplorer.stackView.openMarker',
+      selectedMarker
+    );
+  }
 
   vscode.commands.registerCommand('codeExplorer.actions', async () => {
     const stack = await markerService.getActiveStack();
@@ -115,66 +179,5 @@ export function registerCommands() {
         const exhausted: never = selected.id;
         throw new Error('Unhandled action: ' + exhausted);
     }
-  });
-
-  vscode.commands.registerCommand('codeExplorer.createStack', async () => {
-    await markerService.createStack();
-  });
-
-  vscode.commands.registerCommand('codeExplorer.selectMarker', async () => {
-    const stack = await markerService.getActiveStack();
-    if (!stack) return;
-
-    await showMarkers(
-      'Select a marker of current stack: ' + (stack.title ?? untitledStack),
-      stack.markers
-    );
-  });
-
-  vscode.commands.registerCommand('codeExplorer.selectMarkerAll', async () => {
-    const stacks = await markerService.getStacks();
-    const markers = stacks.reduce(
-      (m, s) => m.concat(s.markers),
-      [] as Marker[]
-    );
-    await showMarkers('Select a marker of ALL stacks', markers);
-  });
-
-  async function showMarkers(title: string, markers: Marker[]) {
-    if (!markers.length) {
-      await vscode.window.showQuickPick([{ label: 'No markers' }]);
-      return;
-    }
-
-    const pickItems: (vscode.QuickPickItem & { marker: Marker })[] =
-      markers.map((m) => ({
-        label: getMarkerTitle(m),
-        description: getMarkerDesc(m),
-        marker: m,
-      }));
-
-    const selected = await vscode.window.showQuickPick(pickItems, {
-      title,
-      matchOnDescription: true,
-      matchOnDetail: true,
-    });
-    if (!selected) return;
-
-    const selectedMarker = selected.marker;
-    await vscode.commands.executeCommand(
-      'codeExplorer.stackView.openMarker',
-      selectedMarker
-    );
-  }
-
-  vscode.commands.registerCommand('codeExplorer.openDataFile', async () => {
-    const file = markerService.getDataFilePath();
-    if (!file) {
-      vscode.window.showWarningMessage(
-        'No folder is opened in this VSCode window'
-      );
-      return;
-    }
-    await vscode.commands.executeCommand('vscode.open', file);
   });
 }

@@ -7,13 +7,15 @@ import {
   markerService,
 } from './markerService';
 import { extensionEnv } from './extensionEnv';
-import { getDateTimeStr, getRelativeFilePath } from './util';
+import { getDateStr, getDateTimeStr, getRelativeFilePath } from './util';
 import { vscodeIcons } from './icons';
 
 interface LabelElement {
   type: 'label';
   label: string;
   chooseFolder?: boolean;
+  noStack?: boolean;
+  noMarkers?: boolean;
 }
 
 interface MarkerElement {
@@ -28,7 +30,7 @@ interface StackElement {
 
 type TreeElement = MarkerElement | StackElement | LabelElement;
 
-export const untitledStack = '<Untitled>';
+export const untitledStack = '<Untitled Stack>';
 
 export class MarkerTreeViewProvider
   implements
@@ -425,6 +427,7 @@ export class MarkerTreeViewProvider
           {
             type: 'label',
             label: 'No stacks',
+            noStack: true,
           },
         ];
     }
@@ -439,6 +442,7 @@ export class MarkerTreeViewProvider
           {
             type: 'label',
             label: 'No markers',
+            noMarkers: true,
           },
         ];
       }
@@ -468,6 +472,27 @@ export class MarkerTreeViewProvider
             title: 'Choose workspace folder',
           },
         };
+      } else if (element.noStack) {
+        return {
+          label: {
+            label: 'No stacks',
+            // highlights: [[73, 78]],
+          },
+          description:
+            'Add a first code marker will create a stack automatically. Or click to create a stack manually.',
+          command: {
+            command: 'codeExplorer.createStack',
+            title: 'Create stack',
+          },
+        };
+      } else if (element.noMarkers) {
+        return {
+          label: {
+            label: 'No markers',
+          },
+          description:
+            'Add a marker by right clicking code line or gutter, or though command palette.',
+        };
       }
       return {
         label: element.label,
@@ -480,7 +505,7 @@ export class MarkerTreeViewProvider
         'Created at ' + getDateTimeStr(stack.createdAt);
       if (stack.isActive)
         tooltip = new vscode.MarkdownString(
-          '**ACTIVE**(Markers will be added in this stack). ' + tooltip
+          '**ACTIVE**(Markers will be added into this stack). ' + tooltip
         );
 
       return {
@@ -491,7 +516,8 @@ export class MarkerTreeViewProvider
               new vscode.ThemeColor('terminal.ansiGreen')
             )
           : undefined,
-        description: stack.markers.length + ' markers',
+        description:
+          stack.markers.length + ' markers ' + getDateStr(stack.createdAt),
         tooltip,
         collapsibleState: stack.isActive
           ? vscode.TreeItemCollapsibleState.Expanded

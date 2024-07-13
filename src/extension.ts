@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { MarkerTreeViewProvider } from './stackView';
 import { extensionEnv } from './extensionEnv';
-import { registerCommands } from './commands';
+import { registerGlobalCommands } from './global-commands';
 import { output } from './output';
 import { markerService } from './markerService';
 import { activateDecoration } from './editor-decoration';
@@ -9,7 +9,7 @@ import { activateDecoration } from './editor-decoration';
 export function activate(context: vscode.ExtensionContext) {
   extensionEnv.setExtensionContext(context);
 
-  registerCommands();
+  registerGlobalCommands();
   MarkerTreeViewProvider.register();
 
   output.activate();

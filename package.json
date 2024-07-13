@@ -34,6 +34,16 @@
   "contributes": {
     "commands": [
       {
+        "command": "codeExplorer.addMarker",
+        "title": "Add Code Marker",
+        "category": "Code Explorer"
+      },
+      {
+        "command": "codeExplorer.stackView.openMarker",
+        "title": "Search and Open Marker",
+        "category": "Code Explorer"
+      },
+      {
         "command": "codeExplorer.chooseWorkspaceFolder",
         "title": "Choose Workspace Folder",
         "category": "Code Explorer",
@@ -85,11 +95,6 @@
         "enablement": "view == codeExplorer.stackView"
       },
       {
-        "command": "codeExplorer.addMarker",
-        "title": "Add Code Marker",
-        "category": "Code Explorer"
-      },
-      {
         "command": "codeExplorer.stackView.setMarkerTitle",
         "title": "Set Title",
         "category": "Code Explorer",
@@ -112,11 +117,6 @@
         "title": "Delete a Tag",
         "category": "Code Explorer",
         "enablement": "view == codeExplorer.stackView"
-      },
-      {
-        "command": "codeExplorer.stackView.openMarker",
-        "title": "Open the Marker",
-        "category": "Code Explorer"
       },
       {
         "command": "codeExplorer.stackView.indentMarker",
