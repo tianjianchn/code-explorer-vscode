@@ -6,6 +6,7 @@ import {
   markerService,
 } from './markerService';
 import { untitledStack } from './stackView';
+import { EditorLineNumberContextParams } from './editor-decoration';
 
 export function registerGlobalCommands() {
   vscode.commands.registerCommand(
@@ -42,6 +43,10 @@ export function registerGlobalCommands() {
 
       let range: vscode.Range;
       let column = 0;
+      if (p && p.lineNumber >= 0) {
+        // gutter context menu
+        range = editor.document.lineAt(p.lineNumber - 1).range;
+      } else {
         if (!editor.selection.isEmpty) {
           range = editor.selection;
           column = range.start.character;
@@ -49,6 +54,7 @@ export function registerGlobalCommands() {
           range = editor.document.lineAt(editor.selection.active.line).range;
           column = editor.selection.start.character;
         }
+      }
 
       let text = editor.document.getText(range);
       if (!text) return;

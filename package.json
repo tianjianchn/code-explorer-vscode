@@ -153,6 +153,11 @@
         "command": "codeExplorer.openDataFile",
         "title": "Open Data File (Edit carefully)",
         "category": "Code Explorer"
+      },
+      {
+        "command": "codeExplorer.gutter.deleteMarker",
+        "title": "Delete Code Marker",
+        "category": "Code Explorer"
       }
     ],
     "viewsContainers": {
@@ -176,10 +181,28 @@
       ]
     },
     "menus": {
+      "commandPalette": [
+        {
+          "command": "codeExplorer.gutter.deleteMarker",
+          "when": "false"
+        }
+      ],
       "editor/context": [
         {
           "command": "codeExplorer.addMarker",
           "group": "z_commands"
+        }
+      ],
+      "editor/lineNumber/context": [
+        {
+          "command": "codeExplorer.addMarker",
+          "when": "editorLineNumber not in codeExplorer.markerLines",
+          "group": "codeExplorer"
+        },
+        {
+          "command": "codeExplorer.gutter.deleteMarker",
+          "when": "editorLineNumber in codeExplorer.markerLines",
+          "group": "codeExplorer"
         }
       ],
       "view/title": [

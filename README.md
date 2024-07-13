@@ -21,6 +21,7 @@ Explore codebase efficiently in VSCode with adding markers into a stack and swit
 - Show gutter icon for the line of marker.
 - Data is saved in workspace .vscode dir with JSON format.
 - Support multiple folder workspace.
+- [TODO] Support stack groups (also nested)
 
 ## Usage
 

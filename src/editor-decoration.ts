@@ -2,8 +2,29 @@ import * as vscode from 'vscode';
 import { extensionEnv } from './extensionEnv';
 import { markerService } from './markerService';
 
+export interface EditorLineNumberContextParams {
+  uri: vscode.Uri;
+  lineNumber: number;
+}
+
 export function activateDecoration() {
   const context = extensionEnv.getExtensionContext();
+
+  vscode.commands.registerCommand(
+    'codeExplorer.gutter.deleteMarker',
+    async (p: EditorLineNumberContextParams) => {
+      const stack = await markerService.getActiveStack();
+      if (!stack?.markers.length) return;
+
+      const marker = stack.markers.find(
+        (m) => m.file === p.uri.fsPath && m.line === p.lineNumber - 1
+      );
+
+      if (marker) {
+        await markerService.deleteMarker(marker.id);
+      }
+    }
+  );
 
   const gutterDecorationType = vscode.window.createTextEditorDecorationType({
     gutterIconPath: context.asAbsolutePath('media/logo.svg'),
@@ -59,25 +80,33 @@ export function activateDecoration() {
     const fileName = activeEditor.document.fileName;
 
     const decList: vscode.DecorationOptions[] = [];
+    const markerLines = new Set<number>();
+
     const stack = await markerService.getActiveStack();
-    if (!stack || !stack.markers.length) return;
+    if (stack?.markers.length) {
+      stack.markers.forEach((m) => {
+        if (m.file !== fileName) return;
 
-    stack.markers.forEach((m) => {
-      if (m.file !== fileName) return;
+        const range = activeEditor.document.lineAt(m.line).range;
+        const decoration: vscode.DecorationOptions = {
+          range: range,
+          hoverMessage: new vscode.MarkdownString(
+            '(Code Explorer Marker) ' + (m.title ?? '')
+          ),
+        };
+        decList.push(decoration);
 
-      const range = new vscode.Range(
-        new vscode.Position(m.line, 0),
-        new vscode.Position(m.line, 0)
-      );
-      const decoration: vscode.DecorationOptions = {
-        range: range,
-        hoverMessage: new vscode.MarkdownString(
-          '(Code Explorer) ' + (m.title ?? '')
-        ),
-      };
-      decList.push(decoration);
-    });
+        markerLines.add(m.line + 1);
+      });
+    }
+
     activeEditor.setDecorations(gutterDecorationType, decList);
+
+    vscode.commands.executeCommand(
+      'setContext',
+      'codeExplorer.markerLines',
+      Array.from(markerLines)
+    );
   }
 
   vscode.window.onDidChangeActiveTextEditor(
