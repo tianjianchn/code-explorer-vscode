@@ -225,6 +225,28 @@ class MarkerService {
     return null;
   }
 
+  async openMarker(marker: Marker) {
+    const selection = new vscode.Selection(
+      new vscode.Position(marker.line, marker.column),
+      new vscode.Position(marker.line, marker.column)
+    );
+
+    // const doc = await vscode.workspace.openTextDocument(el.file);
+    // vscode.window.showTextDocument(doc, {
+    //   selection,
+    // });
+
+    await vscode.commands.executeCommand(
+      // see https://code.visualstudio.com/api/references/commands
+      'vscode.openWith',
+      vscode.Uri.file(marker.file),
+      'default',
+      {
+        selection,
+      } as vscode.TextDocumentShowOptions
+    );
+  }
+
   async setTitle(markerId: string, title: string) {
     const marker = this.getMarker(markerId);
     if (!marker) return;
@@ -429,12 +451,6 @@ class MarkerService {
       }
 
       const stacks = (data.stacks ?? []) as Stack[];
-      // const activeIndex = stacks.findIndex((s) => s.isActive);
-      // if (activeIndex > 0) {
-      //   const activeStack = stacks[activeIndex];
-      //   stacks.splice(activeIndex, 1);
-      //   stacks.unshift(activeStack);
-      // }
       this.stacks = stacks;
     } catch (e) {
       this.stacks = [];

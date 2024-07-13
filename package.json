@@ -39,7 +39,7 @@
         "category": "Code Explorer"
       },
       {
-        "command": "codeExplorer.stackView.openMarker",
+        "command": "codeExplorer.selectMarker",
         "title": "Search and Open Marker",
         "category": "Code Explorer"
       },
@@ -93,6 +93,11 @@
         "category": "Code Explorer",
         "icon": "$(trash)",
         "enablement": "view == codeExplorer.stackView"
+      },
+      {
+        "command": "codeExplorer.stackView.openMarker",
+        "title": "Open Marker",
+        "category": "Code Explorer"
       },
       {
         "command": "codeExplorer.stackView.setMarkerTitle",
@@ -182,6 +187,10 @@
     },
     "menus": {
       "commandPalette": [
+        {
+          "command": "codeExplorer.stackView.openMarker",
+          "when": "false"
+        },
         {
           "command": "codeExplorer.gutter.deleteMarker",
           "when": "false"

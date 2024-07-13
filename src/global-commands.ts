@@ -70,6 +70,16 @@ export function registerGlobalCommands() {
     }
   );
 
+  vscode.commands.registerCommand('codeExplorer.selectMarker', async () => {
+    const stack = await markerService.getActiveStack();
+    if (!stack) return;
+
+    await showMarkers(
+      'Select a marker of current stack: ' + (stack.title ?? untitledStack),
+      stack.markers
+    );
+  });
+
   vscode.commands.registerCommand('codeExplorer.createStack', async () => {
     await markerService.createStack();
   });
@@ -83,16 +93,6 @@ export function registerGlobalCommands() {
       return;
     }
     await vscode.commands.executeCommand('vscode.open', file);
-  });
-
-  vscode.commands.registerCommand('codeExplorer.selectMarker', async () => {
-    const stack = await markerService.getActiveStack();
-    if (!stack) return;
-
-    await showMarkers(
-      'Select a marker of current stack: ' + (stack.title ?? untitledStack),
-      stack.markers
-    );
   });
 
   vscode.commands.registerCommand('codeExplorer.selectMarkerAll', async () => {
