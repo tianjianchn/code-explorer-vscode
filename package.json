@@ -2,7 +2,7 @@
   "name": "code-explorer",
   "displayName": "Code Explorer",
   "description": "Mark code call chain into a stack and switching among them.",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "license": "MIT",
   "repository": {
     "url": "https://github.com/tianjianchn/code-explorer-vscode"

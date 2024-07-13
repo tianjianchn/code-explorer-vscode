@@ -4,6 +4,10 @@ All notable changes to the "code-explorer" extension will be documented in this 
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 0.3.1
+
+- Add gutter context menu to add/delete marker
+
 ## 0.3.0
 
 - Add marker at the end of stack, not at the head
