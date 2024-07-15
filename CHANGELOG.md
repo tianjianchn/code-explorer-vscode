@@ -4,6 +4,10 @@ All notable changes to the "code-explorer" extension will be documented in this 
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 0.3.3
+
+- Rename data file without heading dot
+
 ## 0.3.2
 
 - Save relative file path of marker
