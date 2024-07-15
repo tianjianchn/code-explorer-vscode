@@ -387,7 +387,7 @@ class MarkerService {
     }
   }
 
-  private _oldGetDataFilePath() {
+  private _getDataFilePathFromStorage() {
     const context = extensionEnv.getExtensionContext();
     if (!context.storageUri) {
       // No workspace opened
@@ -398,13 +398,24 @@ class MarkerService {
     return file;
   }
 
-  getDataFilePath() {
+  private _getDataFilePathFromHidden() {
     if (!this.folder) return;
 
     const file = vscode.Uri.joinPath(
       this.folder,
       '.vscode',
       '.code-explorer.json'
+    );
+    return file;
+  }
+
+  getDataFilePath() {
+    if (!this.folder) return;
+
+    const file = vscode.Uri.joinPath(
+      this.folder,
+      '.vscode',
+      'code-explorer.json'
     );
 
     return file;
@@ -470,26 +481,39 @@ class MarkerService {
       this.stacks = stacks;
     } catch (e) {
       this.stacks = [];
-      if (
-        e instanceof vscode.FileSystemError &&
-        e.code === 'FileNotFound' &&
-        file === this.getDataFilePath()
-      ) {
-        // Copy from old version
-        const oldFile = this._oldGetDataFilePath();
-        if (oldFile) {
-          output.log('Try to load from old data file: ' + oldFile.toString());
-          await this.doLoad(oldFile);
-          await this.saveData();
-          if (this.stacks.length) {
-            try {
-              await vscode.workspace.fs.delete(oldFile);
-            } catch (e2) {}
+      if (e instanceof vscode.FileSystemError && e.code === 'FileNotFound') {
+        if (file.fsPath === this.getDataFilePath()?.fsPath) {
+          // Copy from hidden version
+          const oldFile = this._getDataFilePathFromHidden();
+          if (oldFile) {
+            output.log('Try to load from old data file: ' + oldFile.toString());
+            await this.doLoad(oldFile);
+            await this.saveData();
+            if (this.stacks.length) {
+              try {
+                await vscode.workspace.fs.delete(oldFile);
+              } catch (e2) {}
+            }
+            return;
+          }
+        } else if (file.fsPath === this._getDataFilePathFromHidden()?.fsPath) {
+          // Copy from storage version
+          const oldFile = this._getDataFilePathFromStorage();
+          if (oldFile) {
+            output.log('Try to load from old data file: ' + oldFile.toString());
+            await this.doLoad(oldFile);
+            await this.saveData();
+            if (this.stacks.length) {
+              try {
+                await vscode.workspace.fs.delete(oldFile);
+              } catch (e2) {}
+            }
+            return;
           }
         }
-      } else {
-        output.log('Error to load data: ' + String(e));
       }
+
+      output.log('Error to load data: ' + String(e));
     }
   }
 
