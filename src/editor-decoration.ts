@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { extensionEnv } from './extensionEnv';
 import { markerService } from './markerService';
+import { MarkerTreeViewProvider } from './stackView';
 
 export interface EditorLineNumberContextParams {
   uri: vscode.Uri;
@@ -13,15 +14,47 @@ export function activateDecoration() {
   vscode.commands.registerCommand(
     'codeExplorer.gutter.deleteMarker',
     async (p: EditorLineNumberContextParams) => {
-      const stack = await markerService.getActiveStack();
-      if (!stack?.markers.length) return;
+      const stacks = await markerService.getStacks();
+      for (let stack of stacks) {
+        if (!stack?.markers.length) continue;
 
         const marker = stack.markers.find(
           (m) => m.file === p.uri.fsPath && m.line === p.lineNumber - 1
         );
 
         if (marker) {
-        await markerService.deleteMarker(marker.id);
+          markerService.deleteMarker(marker.id);
+        }
+      }
+    }
+  );
+  vscode.commands.registerCommand(
+    'codeExplorer.gutter.revealMarker',
+    async (p: EditorLineNumberContextParams) => {
+      let [stacks, activeStack] = await Promise.all([
+        markerService.getStacks(),
+        markerService.getActiveStack(),
+      ]);
+
+      // Ensure active stack is the first stack to check
+      let index = activeStack ? stacks.indexOf(activeStack) : -1;
+      if (index > 0 && activeStack) {
+        stacks = [...stacks];
+        stacks.splice(index, 1);
+        stacks.unshift(activeStack);
+      }
+
+      for (let stack of stacks) {
+        if (!stack?.markers.length) continue;
+
+        const marker = stack.markers.find(
+          (m) => m.file === p.uri.fsPath && m.line === p.lineNumber - 1
+        );
+
+        if (marker) {
+          MarkerTreeViewProvider.revealMarker(marker);
+          return;
+        }
       }
     }
   );

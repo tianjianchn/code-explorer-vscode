@@ -5,7 +5,7 @@ import {
   getMarkerTitle,
   markerService,
 } from './markerService';
-import { untitledStack } from './stackView';
+import { MarkerTreeViewProvider, untitledStack } from './stackView';
 import { EditorLineNumberContextParams } from './editor-decoration';
 
 export function registerGlobalCommands() {
@@ -61,12 +61,15 @@ export function registerGlobalCommands() {
       text = text.trim();
       if (!text) return;
 
-      markerService.addMarker({
+      const marker = await markerService.addMarker({
         line: range.start.line,
         column,
         code: text,
         file: editor.document.fileName,
       });
+      setTimeout(() => {
+        MarkerTreeViewProvider.revealMarker(marker);
+      }, 300);
     }
   );
 

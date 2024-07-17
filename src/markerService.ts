@@ -208,13 +208,15 @@ class MarkerService {
     if (!stack.title)
       stack.title = marker.code.slice(0, 16) + ' ' + getDateStr(now);
 
-    stack.markers.push({
+    const record = {
       ...marker,
       id: uuid(),
       createdAt: now.toISOString(),
-    });
+    };
+    stack.markers.push(record);
 
     await this.saveData();
+    return record;
   }
 
   async openMarker(marker: Marker) {

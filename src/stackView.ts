@@ -38,15 +38,15 @@ export class MarkerTreeViewProvider
     vscode.TreeDragAndDropController<TreeElement>
 {
   private static _view: vscode.TreeView<TreeElement>;
-  private static _provider: MarkerTreeViewProvider;
+  private static _instance: MarkerTreeViewProvider;
 
   static register() {
     const context = extensionEnv.getExtensionContext();
 
-    this._provider = new MarkerTreeViewProvider();
+    this._instance = new MarkerTreeViewProvider();
     const view = vscode.window.createTreeView('codeExplorer.stackView', {
-      treeDataProvider: this._provider,
-      dragAndDropController: this._provider,
+      treeDataProvider: this._instance,
+      dragAndDropController: this._instance,
       showCollapseAll: true,
     });
     context.subscriptions.push(view);
@@ -55,11 +55,18 @@ export class MarkerTreeViewProvider
     this.registerCommands();
   }
 
+  static async revealMarker(marker: Marker) {
+    return this._view.reveal(
+      { type: 'marker', marker },
+      { focus: true, expand: 1 }
+    );
+  }
+
   private static registerCommands() {
     vscode.commands.registerCommand('codeExplorer.refresh', () => {
-      this._provider.refresh();
+      this._instance.refresh();
     });
-    markerService.onDataUpdated(() => this._provider.refresh());
+    markerService.onDataUpdated(() => this._instance.refresh());
 
     vscode.commands.registerCommand(
       'codeExplorer.activateStack',
@@ -359,13 +366,13 @@ export class MarkerTreeViewProvider
     element: TreeElement
   ): Promise<TreeElement | null | undefined> {
     if (element.type === 'stack' || element.type === 'label') return null;
+
     const marker = element.marker;
     const stacks = await markerService.getStacks();
     const stack = stacks.find((s) => s.markers.some((m) => m === marker));
     if (!stack) return null;
-    const stackElArr = await this.getChildren();
-    const par = stackElArr.find((e) => e.type === 'stack' && e.stack === stack);
-    return par;
+
+    return { type: 'stack', stack };
   }
 
   async getChildren(element?: TreeElement): Promise<TreeElement[]> {

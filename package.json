@@ -163,6 +163,11 @@
         "command": "codeExplorer.gutter.deleteMarker",
         "title": "Delete Code Marker",
         "category": "Code Explorer"
+      },
+      {
+        "command": "codeExplorer.gutter.revealMarker",
+        "title": "Reveal Code Marker",
+        "category": "Code Explorer"
       }
     ],
     "viewsContainers": {
@@ -194,6 +199,10 @@
         {
           "command": "codeExplorer.gutter.deleteMarker",
           "when": "false"
+        },
+        {
+          "command": "codeExplorer.gutter.revealMarker",
+          "when": "false"
         }
       ],
       "editor/context": [
@@ -206,6 +215,11 @@
         {
           "command": "codeExplorer.addMarker",
           "when": "editorLineNumber not in codeExplorer.markerLines",
+          "group": "codeExplorer"
+        },
+        {
+          "command": "codeExplorer.gutter.revealMarker",
+          "when": "editorLineNumber in codeExplorer.markerLines",
           "group": "codeExplorer"
         },
         {
