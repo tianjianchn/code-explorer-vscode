@@ -16,20 +16,25 @@ export function activateDecoration() {
       const stack = await markerService.getActiveStack();
       if (!stack?.markers.length) return;
 
-      const marker = stack.markers.find(
-        (m) => m.file === p.uri.fsPath && m.line === p.lineNumber - 1
-      );
+        const marker = stack.markers.find(
+          (m) => m.file === p.uri.fsPath && m.line === p.lineNumber - 1
+        );
 
-      if (marker) {
+        if (marker) {
         await markerService.deleteMarker(marker.id);
       }
     }
   );
 
   const gutterDecorationType = vscode.window.createTextEditorDecorationType({
-    gutterIconPath: context.asAbsolutePath('media/logo.svg'),
+    gutterIconPath: context.asAbsolutePath('media/logo.png'),
     gutterIconSize: '90%',
   });
+  const gutterNotActiveDecorationType =
+    vscode.window.createTextEditorDecorationType({
+      gutterIconPath: context.asAbsolutePath('media/logo_gray.png'),
+      gutterIconSize: '90%',
+    });
 
   // create a decorator type that we use to decorate small numbers
   // const smallNumberDecorationType =
@@ -80,10 +85,16 @@ export function activateDecoration() {
     const fileName = activeEditor.document.fileName;
 
     const decList: vscode.DecorationOptions[] = [];
+    const decNotActiveList: vscode.DecorationOptions[] = [];
     const markerLines = new Set<number>();
 
-    const stack = await markerService.getActiveStack();
-    if (stack?.markers.length) {
+    const [stacks, activeStack] = await Promise.all([
+      markerService.getStacks(),
+      markerService.getActiveStack(),
+    ]);
+    stacks.forEach((stack) => {
+      if (!stack?.markers.length) return;
+
       stack.markers.forEach((m) => {
         if (m.file !== fileName) return;
 
@@ -94,13 +105,21 @@ export function activateDecoration() {
             '(Code Explorer Marker) ' + (m.title ?? '')
           ),
         };
-        decList.push(decoration);
+        if (stack === activeStack) {
+          decList.push(decoration);
+        } else {
+          decNotActiveList.push(decoration);
+        }
 
         markerLines.add(m.line + 1);
       });
-    }
+    });
 
     activeEditor.setDecorations(gutterDecorationType, decList);
+    activeEditor.setDecorations(
+      gutterNotActiveDecorationType,
+      decNotActiveList
+    );
 
     vscode.commands.executeCommand(
       'setContext',
