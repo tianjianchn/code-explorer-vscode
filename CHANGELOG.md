@@ -4,6 +4,12 @@ All notable changes to the "code-explorer" extension will be documented in this 
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 0.4.2
+
+- Add reveal command in gutter hover message
+- For multi-line marker, use top line as title and bottom line as code
+- Fix: Line in paste call stack is based on 1 not 0
+
 ## 0.4.0
 
 - Use function name as marker title in multi-line marker
