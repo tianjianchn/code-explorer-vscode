@@ -43,44 +43,50 @@ export function registerGlobalCommands() {
 
       let line: number;
       let column: number;
-      let text: string;
+      let code: string;
+      let title: string | undefined = undefined;
       if (p && p.lineNumber >= 0) {
         // from gutter context menu
         line = p.lineNumber - 1;
         let range = editor.document.lineAt(line).range;
         column = range.start.character;
-        text = editor.document.getText(range);
+        code = editor.document.getText(range);
       } else {
         // from line in editor or command pallette
         if (editor.selection.isEmpty) {
           line = editor.selection.active.line;
           let range = editor.document.lineAt(line).range;
           column = editor.selection.start.character;
-          text = editor.document.getText(range);
+          code = editor.document.getText(range);
         } else {
           let range: vscode.Range = editor.selection;
           if (range.end.line === range.start.line) {
             line = range.start.line;
             column = range.start.character;
-            text = editor.document.getText(range);
+            code = editor.document.getText(range);
           } else {
             // Suppose the top line in multiple lines selection is function name
             line = range.end.line;
             column = range.end.character;
-            range = editor.document.lineAt(range.start.line).range;
-            text = editor.document.getText(range);
+            title = editor.document.getText(
+              editor.document.lineAt(range.start.line).range
+            );
+            code = editor.document.getText(
+              editor.document.lineAt(range.end.line).range
+            );
           }
         }
       }
 
-      if (!text) return;
-      text = text.trim();
-      if (!text) return;
+      if (!code) return;
+      code = code.trim();
+      if (!code) return;
 
       const marker = await markerService.addMarker({
         line,
         column,
-        code: text,
+        code,
+        title: title?.trim(),
         file: editor.document.fileName,
       });
       setTimeout(() => {
