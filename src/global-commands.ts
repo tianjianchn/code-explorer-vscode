@@ -103,6 +103,26 @@ export function registerGlobalCommands() {
     await markerService.createStack();
   });
 
+  vscode.commands.registerCommand('codeExplorer.pasteCallStack', async () => {
+    const text = await vscode.env.clipboard.readText();
+    if (!text) return;
+    const lines = text.split('\n');
+    const markers = lines
+      .map((line) => {
+        const matches = /^(.+?) \(((?:\/[^/]+)+):(\d+)\)$/.exec(line);
+        if (!matches) return null;
+        const code = matches[1];
+        const file = matches[2];
+        const lineNo = parseInt(matches[3], 10);
+        return { code, file, line: lineNo, column: 0 };
+      })
+      .filter(Boolean) as Omit<Marker, 'createdAt' | 'id'>[];
+    if (!markers.length) return;
+
+    await markerService.createStack();
+    await markerService.addMarkers(markers);
+  });
+
   vscode.commands.registerCommand('codeExplorer.openDataFile', async () => {
     const file = markerService.getDataFilePath();
     if (!file) {

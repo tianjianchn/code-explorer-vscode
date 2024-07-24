@@ -219,6 +219,27 @@ class MarkerService {
     return record;
   }
 
+  async addMarkers(markers: Omit<Marker, 'createdAt' | 'id'>[]) {
+    const now = new Date();
+    let stack = this.stacks.find((s) => s.isActive);
+    if (!stack) {
+      stack = this.doCreateStack();
+    }
+
+    if (!stack.title)
+      stack.title = markers[0].code.slice(0, 16) + ' ' + getDateStr(now);
+
+    const records = markers.map((marker) => ({
+      ...marker,
+      id: uuid(),
+      createdAt: now.toISOString(),
+    }));
+    stack.markers.push(...records);
+
+    await this.saveData();
+    return records;
+  }
+
   async openMarker(marker: Marker) {
     if (!this.folder) throw new Error('No selected workspace folder');
 

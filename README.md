@@ -13,7 +13,8 @@ Explore codebase efficiently in VSCode with adding markers into a stack and swit
 ## Features
 
 - Add markers for code of files.
-- Organize markers by stacks which are more like code call chain.
+- Organize markers by stacks which are more like call stack.
+- Paste call stack (e.g. from VSCode debug CALL STACK view).
 - Indent/Unindent marker to make it more like call hierarchy.
 - Drag and drop markers and stacks to re-order them.
 - Set title, icon, tags for a marker.
