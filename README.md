@@ -21,7 +21,9 @@ Explore codebase efficiently in VSCode with adding markers into a stack and swit
 - Show gutter icon for the line of marker.
 - Data is saved in workspace .vscode dir with JSON format.
 - Support multiple folder workspace.
-- [TODO] Support stack groups (also nested)
+- [TODO] Support stack groups (group is also nested).
+
+> Tips: If you want to get a Call Stack style like debug view, which is showing function name as the marker title other than the code of marker's line, select from the marker line to function name line, then add code marker. Try it and see!
 
 ## Usage
 

@@ -41,28 +41,44 @@ export function registerGlobalCommands() {
       const editor = vscode.window.activeTextEditor;
       if (!editor) return;
 
-      let range: vscode.Range;
-      let column = 0;
+      let line: number;
+      let column: number;
+      let text: string;
       if (p && p.lineNumber >= 0) {
-        // gutter context menu
-        range = editor.document.lineAt(p.lineNumber - 1).range;
+        // from gutter context menu
+        line = p.lineNumber - 1;
+        let range = editor.document.lineAt(line).range;
+        column = range.start.character;
+        text = editor.document.getText(range);
       } else {
-        if (!editor.selection.isEmpty) {
-          range = editor.selection;
-          column = range.start.character;
-        } else {
-          range = editor.document.lineAt(editor.selection.active.line).range;
+        // from line in editor or command pallette
+        if (editor.selection.isEmpty) {
+          line = editor.selection.active.line;
+          let range = editor.document.lineAt(line).range;
           column = editor.selection.start.character;
+          text = editor.document.getText(range);
+        } else {
+          let range: vscode.Range = editor.selection;
+          if (range.end.line === range.start.line) {
+            line = range.start.line;
+            column = range.start.character;
+            text = editor.document.getText(range);
+          } else {
+            // Suppose the top line in multiple lines selection is function name
+            line = range.end.line;
+            column = range.end.character;
+            range = editor.document.lineAt(range.start.line).range;
+            text = editor.document.getText(range);
+          }
         }
       }
 
-      let text = editor.document.getText(range);
       if (!text) return;
       text = text.trim();
       if (!text) return;
 
       const marker = await markerService.addMarker({
-        line: range.start.line,
+        line,
         column,
         code: text,
         file: editor.document.fileName,
