@@ -69,31 +69,6 @@ export function activateDecoration() {
       gutterIconSize: '90%',
     });
 
-  // create a decorator type that we use to decorate small numbers
-  // const smallNumberDecorationType =
-  //   vscode.window.createTextEditorDecorationType({
-  //     borderWidth: '1px',
-  //     borderStyle: 'solid',
-  //     overviewRulerColor: 'blue',
-  //     overviewRulerLane: vscode.OverviewRulerLane.Right,
-  //     light: {
-  //       // this color will be used in light color themes
-  //       borderColor: 'darkblue',
-  //     },
-  //     dark: {
-  //       // this color will be used in dark color themes
-  //       borderColor: 'lightblue',
-  //     },
-  //   });
-
-  // create a decorator type that we use to decorate large numbers
-  // const largeNumberDecorationType =
-  //   vscode.window.createTextEditorDecorationType({
-  //     cursor: 'crosshair',
-  //     // use a themable color. See package.json for the declaration and default values.
-  //     backgroundColor: { id: 'myextension.largeNumberBackground' },
-  //   });
-
   let timeout: NodeJS.Timeout | undefined = undefined;
   function triggerUpdateDecorations(throttle = false) {
     if (timeout) {
@@ -132,11 +107,27 @@ export function activateDecoration() {
         if (m.file !== fileName) return;
 
         const range = activeEditor.document.lineAt(m.line).range;
+        const revealCommandArgs = [
+          {
+            lineNumber: m.line + 1,
+            uri: vscode.Uri.file(m.file),
+          } as EditorLineNumberContextParams,
+        ];
+        const revealCommandMd = `[${
+          stack.title
+        }](command:codeExplorer.gutter.revealMarker?${encodeURIComponent(
+          JSON.stringify(revealCommandArgs)
+        )})`;
+        const md = new vscode.MarkdownString(
+          'Marked by Code Explorer in stack ' +
+            revealCommandMd +
+            (m.title ? ': ' + m.title : '')
+        );
+        md.isTrusted = true; // NOTE: this is needed to execute commands!
+
         const decoration: vscode.DecorationOptions = {
           range: range,
-          hoverMessage: new vscode.MarkdownString(
-            '(Code Explorer Marker) ' + (m.title ?? '')
-          ),
+          hoverMessage: md,
         };
         if (stack === activeStack) {
           decList.push(decoration);
