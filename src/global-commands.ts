@@ -114,7 +114,7 @@ export function registerGlobalCommands() {
         const code = matches[1];
         const file = matches[2];
         const lineNo = parseInt(matches[3], 10);
-        return { code, file, line: lineNo, column: 0 };
+        return { code, file, line: lineNo - 1, column: 0 };
       })
       .filter(Boolean) as Omit<Marker, 'createdAt' | 'id'>[];
     if (!markers.length) return;
