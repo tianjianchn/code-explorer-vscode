@@ -4,6 +4,11 @@ All notable changes to the "code-explorer" extension will be documented in this 
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 0.4.0
+
+- Use function name as marker title in multi-line marker
+- Support pasting Call Stack from debug view into a new stack
+
 ## 0.3.4
 
 - Show gray gutter for not active marker
