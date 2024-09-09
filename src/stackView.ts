@@ -5,6 +5,7 @@ import {
   getMarkerDesc,
   getMarkerTitle,
   markerService,
+  reverseMarkers,
 } from './markerService';
 import { extensionEnv } from './extensionEnv';
 import { getDateStr, getDateTimeStr, getRelativeFilePath } from './util';
@@ -193,9 +194,7 @@ export class MarkerTreeViewProvider
         }
         if (!stack) return;
 
-        const text = stack.markers
-          .slice()
-          .reverse()
+        const text = reverseMarkers(stack.markers.slice())
           .map((m) => getMarkerClipboardText(m))
           .join('\n');
 

@@ -195,7 +195,8 @@ class MarkerService {
     const stack = this.stacks.find((s) => s.id === stackId);
     if (!stack) return;
 
-    stack.markers.reverse();
+    stack.markers = reverseMarkers(stack.markers);
+
     await this.saveData();
   }
 
@@ -667,4 +668,27 @@ export function getMarkerDesc(marker: Marker) {
   return `${getRelativeFilePath(marker.file)}:${marker.line + 1}:${
     marker.column + 1
   }`;
+}
+
+export function reverseMarkers(markers: Marker[]) {
+  const result: Marker[] = [];
+  const len = markers.length;
+  for (let ii = len - 1; ii >= 0; --ii) {
+    const m = markers[ii];
+    if (!m.indent) {
+      result.push(m);
+    } else {
+      // not reverse indent markers
+      let parent = ii - 1;
+      while (parent >= 0 && markers[parent].indent) {
+        parent--;
+      }
+      for (let jj = parent >= 0 ? parent : 0; jj <= ii; ++jj) {
+        result.push(markers[jj]);
+      }
+      ii = parent;
+    }
+  }
+
+  return result;
 }
