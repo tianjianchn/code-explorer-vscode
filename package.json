@@ -291,17 +291,17 @@
         },
         {
           "command": "codeExplorer.stackView.deleteMarker",
-          "when": "view == codeExplorer.stackView && viewItem == marker",
+          "when": "view == codeExplorer.stackView && viewItem =~ /^marker/",
           "group": "inline"
         },
         {
           "command": "codeExplorer.stackView.setMarkerTitle",
-          "when": "view == codeExplorer.stackView && viewItem == marker",
+          "when": "view == codeExplorer.stackView && viewItem =~ /^marker/",
           "group": "0"
         },
         {
           "command": "codeExplorer.stackView.setMarkerIcon",
-          "when": "view == codeExplorer.stackView && viewItem == marker",
+          "when": "view == codeExplorer.stackView && viewItem =~ /^marker/ && viewItem != marker_indent",
           "group": "2"
         },
         {
@@ -311,32 +311,32 @@
         },
         {
           "command": "codeExplorer.stackView.addTag",
-          "when": "view == codeExplorer.stackView && viewItem == marker",
+          "when": "view == codeExplorer.stackView && viewItem =~ /^marker/",
           "group": "4"
         },
         {
           "command": "codeExplorer.stackView.deleteTag",
-          "when": "view == codeExplorer.stackView && viewItem == marker",
+          "when": "view == codeExplorer.stackView && viewItem =~ /^marker/",
           "group": "4"
         },
         {
           "command": "codeExplorer.stackView.indentMarker",
-          "when": "view == codeExplorer.stackView && viewItem == marker",
+          "when": "view == codeExplorer.stackView && viewItem =~ /^marker/",
           "group": "5"
         },
         {
           "command": "codeExplorer.stackView.unindentMarker",
-          "when": "view == codeExplorer.stackView && viewItem == marker",
+          "when": "view == codeExplorer.stackView && viewItem =~ /^marker/",
           "group": "5"
         },
         {
           "command": "codeExplorer.stackView.copyMarker",
-          "when": "view == codeExplorer.stackView && viewItem == marker",
+          "when": "view == codeExplorer.stackView && viewItem =~ /^marker/",
           "group": "7"
         },
         {
           "command": "codeExplorer.stackView.deleteMarker",
-          "when": "view == codeExplorer.stackView && viewItem == marker",
+          "when": "view == codeExplorer.stackView && viewItem =~ /^marker/",
           "group": "9"
         }
       ]

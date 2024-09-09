@@ -598,7 +598,7 @@ export class MarkerTreeViewProvider
         description: getMarkerDesc(m),
         tooltip,
         collapsibleState: vscode.TreeItemCollapsibleState.None,
-        contextValue: 'marker',
+        contextValue: indent ? 'marker_indent' : 'marker',
       };
     } else {
       const exhaustedType: never = type;
