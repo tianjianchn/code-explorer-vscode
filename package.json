@@ -119,6 +119,12 @@
         "enablement": "view == codeExplorer.stackView"
       },
       {
+        "command": "codeExplorer.stackView.setMarkerIconColor",
+        "title": "Set Icon Color",
+        "category": "Code Explorer",
+        "enablement": "view == codeExplorer.stackView"
+      },
+      {
         "command": "codeExplorer.stackView.addTag",
         "title": "Add a Tag",
         "category": "Code Explorer",
@@ -296,6 +302,11 @@
         {
           "command": "codeExplorer.stackView.setMarkerIcon",
           "when": "view == codeExplorer.stackView && viewItem == marker",
+          "group": "2"
+        },
+        {
+          "command": "codeExplorer.stackView.setMarkerIconColor",
+          "when": "view == codeExplorer.stackView && viewItem =~ /^marker/ && viewItem != marker_indent",
           "group": "2"
         },
         {

@@ -298,14 +298,64 @@ export class MarkerTreeViewProvider
           iconPath: new vscode.ThemeIcon(t),
         }));
         const icon = await vscode.window.showQuickPick(
-          [{ label: '' }].concat(pickItems),
+          [{ label: '<None>' }].concat(pickItems),
           {
             title: 'Set Marker Icon',
             placeHolder: 'Select an icon',
           }
         );
         if (icon === undefined) return;
-        await markerService.setIcon(el.marker.id, icon.label);
+        await markerService.setIcon(
+          el.marker.id,
+          icon.label === '<None>' ? '' : icon.label
+        );
+      }
+    );
+
+    const predefinedColors = [
+      'terminal.ansiBlack',
+      'terminal.ansiBlue',
+      'terminal.ansiBrightBlack',
+      'terminal.ansiBrightBlue',
+      'terminal.ansiBrightCyan',
+      'terminal.ansiBrightGreen',
+      'terminal.ansiBrightMagenta',
+      'terminal.ansiBrightRed',
+      'terminal.ansiBrightWhite',
+      'terminal.ansiBrightYellow',
+      'terminal.ansiCyan',
+      'terminal.ansiGreen',
+      'terminal.ansiMagenta',
+      'terminal.ansiRed',
+      'terminal.ansiWhite',
+      'terminal.ansiYellow',
+    ];
+    vscode.commands.registerCommand(
+      'codeExplorer.stackView.setMarkerIconColor',
+      async (el?: TreeElement) => {
+        if (!el || el.type !== 'marker') return;
+
+        const pickItems: vscode.QuickPickItem[] = predefinedColors.map((t) => ({
+          label: t,
+          // not working in current vscode
+          // iconPath: new vscode.ThemeIcon(
+          //   'pass-filled',
+          //   new vscode.ThemeColor(t)
+          // ),
+        }));
+        const color = await vscode.window.showQuickPick(
+          [{ label: '<None>' }].concat(pickItems),
+          {
+            title: 'Set Marker Icon Color',
+            placeHolder: 'Select an icon color',
+          }
+        );
+        if (color === undefined) return;
+
+        await markerService.setIconColor(
+          el.marker.id,
+          color.label === '<None>' ? '' : color.label
+        );
       }
     );
 
@@ -530,9 +580,16 @@ export class MarkerTreeViewProvider
           'Code: `' + m.code + '`. ' + tooltip
         );
 
+      const icon = m.icon
+        ? new vscode.ThemeIcon(
+            m.icon,
+            m.iconColor ? new vscode.ThemeColor(m.iconColor) : undefined
+          )
+        : undefined;
+
       return {
         label: { label, highlights },
-        iconPath: m.icon ? new vscode.ThemeIcon(m.icon) : undefined,
+        iconPath: icon,
         command: {
           command: 'codeExplorer.stackView.openMarker',
           arguments: [element],

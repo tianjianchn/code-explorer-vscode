@@ -16,6 +16,7 @@ export interface Marker {
   title?: string;
   tags?: string[];
   icon?: string;
+  iconColor?: string;
   file: string;
   line: number;
   column: number;
@@ -295,6 +296,14 @@ class MarkerService {
 
     await this.saveData();
   }
+  async setIconColor(markerId: string, color: string) {
+    const marker = this.getMarker(markerId);
+    if (!marker) return;
+
+    marker.iconColor = color === '' ? undefined : color;
+
+    await this.saveData();
+  }
 
   async addTag(markerId: string, tag: string) {
     const marker = this.getMarker(markerId);
@@ -469,7 +478,7 @@ class MarkerService {
       const content = dec.decode(fileData);
       const data = JSON.parse(content);
 
-      // Normalize data from old versions
+      // Normalize data from old versions. Should remove after 20250101
       if (data.markers) {
         const oldData = data as {
           currentStackId: string;
@@ -507,7 +516,7 @@ class MarkerService {
       this.stacks = [];
       if (e instanceof vscode.FileSystemError && e.code === 'FileNotFound') {
         if (file.fsPath === this.getDataFilePath()?.fsPath) {
-          // Copy from hidden version
+          // Copy from hidden version. Should remove after 20250101
           const oldFile = this._getDataFilePathFromHidden();
           if (oldFile) {
             output.log('Try to load from old data file: ' + oldFile.toString());
@@ -521,7 +530,7 @@ class MarkerService {
             return;
           }
         } else if (file.fsPath === this._getDataFilePathFromHidden()?.fsPath) {
-          // Copy from storage version
+          // Copy from storage version. Should remove after 20250101
           const oldFile = this._getDataFilePathFromStorage();
           if (oldFile) {
             output.log('Try to load from old data file: ' + oldFile.toString());
@@ -573,6 +582,7 @@ class MarkerService {
             line: m.line,
             column: m.column,
             icon: m.icon,
+            iconColor: m.iconColor,
             indent: m.indent,
             createdAt: m.createdAt,
             id: m.id,
