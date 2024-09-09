@@ -4,6 +4,10 @@ All notable changes to the "code-explorer" extension will be documented in this 
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 0.4.3
+
+- Not reverse indent markers
+
 ## 0.4.2
 
 - Add reveal command in gutter hover message

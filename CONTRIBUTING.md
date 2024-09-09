@@ -13,5 +13,7 @@ npm i
 
 ## Publish
 
+- Update [CHANGELOG.md](./CHANGELOG.md) from git commits and increase version in [package.json](./package.json)
+- Commit with message like `release: <version>`
 - Use `vsce package` to create the vsix file
 - Upload it to VSCode Market
