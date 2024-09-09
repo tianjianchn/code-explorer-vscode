@@ -4,6 +4,11 @@ All notable changes to the "code-explorer" extension will be documented in this 
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 0.4.4
+
+- Add `Set Icon Color` menu
+- Disable set icon on indent markers since it would confuse the hierarchy
+
 ## 0.4.3
 
 - Not reverse indent markers
