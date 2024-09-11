@@ -279,6 +279,15 @@ class MarkerService {
     return null;
   }
 
+  async reposition(markerId: string, line: number, column?: number) {
+    const marker = this.getMarker(markerId);
+    if (!marker) return;
+
+    marker.line = line;
+    if (column) marker.column = column;
+
+    await this.saveData();
+  }
   async setTitle(markerId: string, title: string) {
     const marker = this.getMarker(markerId);
     if (!marker) return;

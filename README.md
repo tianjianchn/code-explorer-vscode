@@ -17,12 +17,11 @@ Explore codebase efficiently in VSCode with adding markers into a stack and swit
 - Paste call stack (e.g. from VSCode debug CALL STACK view).
 - Indent/Unindent marker to make it like call hierarchy.
 - Drag and drop markers and stacks to re-order them.
-- Set title, colored icon, tags for a marker.
+- Set title, colored icon, tags and reposition for a marker.
 - Copy markers as markdown into clipboard.
 - Show gutter icon for the line of marker.
 - Data is saved in workspace .vscode dir with JSON format.
 - Support multiple folder workspace.
-- Do not reverse indent markers when reversing
 - [ ] Support stack groups (group is also nested).
 - [ ] Add default keyboard shortcuts tab/shift+tab to indent/unindent marker
 

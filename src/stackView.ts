@@ -395,6 +395,30 @@ export class MarkerTreeViewProvider
         await markerService.deleteTag(el.marker.id, item.label);
       }
     );
+
+    vscode.commands.registerCommand(
+      'codeExplorer.stackView.repositionMarker',
+      async (el?: TreeElement) => {
+        if (!el || el.type !== 'marker') return;
+
+        const input = await vscode.window.showInputBox({
+          title: 'Reposition Marker',
+          placeHolder: 'Input the title',
+          value: el.marker.line + 1 + '',
+        });
+        if (!input) return;
+        const [lineStr, colStr] = input.trim().split(':');
+        const line = parseInt(lineStr, 10);
+        let col = parseInt(colStr, 10);
+        if (Number.isFinite(line) && line >= 1) {
+          if (Number.isFinite(col) && col >= 1) {
+            await markerService.reposition(el.marker.id, line - 1, col - 1);
+          } else {
+            await markerService.reposition(el.marker.id, line - 1);
+          }
+        }
+      }
+    );
   }
 
   // =========================================================

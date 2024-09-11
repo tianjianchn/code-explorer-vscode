@@ -113,6 +113,12 @@
         "enablement": "view == codeExplorer.stackView"
       },
       {
+        "command": "codeExplorer.stackView.repositionMarker",
+        "title": "Reposition",
+        "category": "Code Explorer",
+        "enablement": "view == codeExplorer.stackView"
+      },
+      {
         "command": "codeExplorer.stackView.setMarkerIcon",
         "title": "Set Icon",
         "category": "Code Explorer",
@@ -328,6 +334,11 @@
           "command": "codeExplorer.stackView.unindentMarker",
           "when": "view == codeExplorer.stackView && viewItem =~ /^marker/",
           "group": "5"
+        },
+        {
+          "command": "codeExplorer.stackView.repositionMarker",
+          "when": "view == codeExplorer.stackView && viewItem =~ /^marker/",
+          "group": "6"
         },
         {
           "command": "codeExplorer.stackView.copyMarker",
