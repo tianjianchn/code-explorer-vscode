@@ -4,6 +4,10 @@ All notable changes to the "code-explorer" extension will be documented in this 
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 0.4.5
+
+- Support reposition for marker
+
 ## 0.4.4
 
 - Add `Set Icon Color` menu
